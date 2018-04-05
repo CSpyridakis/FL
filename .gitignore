@@ -55,3 +55,7 @@ dkms.conf
 CMakeLists.txt
 .idea
 cmake-build-debug/
+
+#Executable
+mylexer
+lex.yy.c
