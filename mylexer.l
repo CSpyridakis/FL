@@ -117,7 +117,7 @@ else [.]*
 }
 
 {else} {
-	printf("ERROR\n");
+	printf("ERROR on line:%d \n",lineNum);
 	return -1;
 }
 
