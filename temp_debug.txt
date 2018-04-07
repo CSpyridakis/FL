@@ -1,0 +1,11 @@
+integer secondident=8+(a-2);
+(* This is a multy line comment
+With new lines spaces and 	tabs*)
+
+char b_34="This is a string";
+
+//Single line comment 
+
+boolean bp:=true;
+
+real a=2839.213E-2 + 0.23E1 - 123.0e+2;

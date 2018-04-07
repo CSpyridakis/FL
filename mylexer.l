@@ -1,6 +1,6 @@
 %{
 #include <stdio.h>
-
+#include "mylexer.h"
 //Lines and characters counters
 int lineNum=0;
 int charsNum=0;
@@ -13,46 +13,51 @@ void increaseVariables(char* text);
 /*Basic */
 digit [0-9]
 digits [1-9][0-9]*
-char [a-zA-Z]
+chara [a-zA-Z]
+
 specialChar [~`@#%^&_{}\\|?]
 space [ \t\n\r]+
+exp [eE][+-]?{digits}
 
 /*Operators*/
-operatorChar [+-*//=<>!]
-operatorWord div|mod|and|or|not
+operatorWord div|mod|and|or|not 
+operatorChar "+"|"-"|"*"|"/"|"="|"<"|">"|"!"
 
 /*Delimiters*/
-delimiterWord begin|end
+delimiterWord begin|end 
 delimiterChar ";"|"("|")"|","|"["|"]"|":="|":"|"."
 
+/*TODO CHECKIT*/
 allSpecialChars {specialChar}|{operatorChar}|{delimiterChar}
-
-string [{digit}{char}{allSpecialChars}{space}]*
-
-exp [eE][+-]?{digits}
+/*TODO FIX IT*/
+string [{digit}{chara}{allSpecialChars}{space}]*
 
 
 /*Regex*/
 keywords {operatorWord}|{delimiterWord}|array|boolean|char|do|else|for|function|goto|if|integer|var|of|while|procedure|program|real|repeat|to|result|return|then|until|downto
-identifiers {char}[{char}{digit}_]*
+/*TODO: REPLACE WITH {chara},{digits}*/
+identifiers {chara}[a-zA-Z0-9_]*
 integer_positive_constants [0]|{digits}
 real_positive_constants (0|{digits})[.][0-9]+{exp}?
 boolean_constants true|false
-constant_strings "\""{string}"\""
-operators [{operatorChar}{operatorWord}]
-delimiters [{delimiterChar}{delimiterWord}]
-whiteSpace [{space}{escapeChar}]
-comments "(*"{string}"*)"
-lineComments "//"{string}
+/*TODO: REPLACE with string*/
+constant_strings "\""[0-9a-zA-Z \t\n\r]*"\""
+operators ([.]*{operatorChar}[.]*)|{operatorWord}
+delimiters ([.]*{delimiterChar}[.]*)|{delimiterWord}
+whiteSpace {space}
+/*TODO: REPLACE with string*/
+comments "(*"[0-9a-zA-Z \t\n\r]*"*)"
+/*TODO: REPLACE with string*/
+lineComments "//"[0-9a-zA-Z \t\r]*
 else [.]*
 
 
 %%
 
 {keywords} {
-	//increaseVariables(yytext);
+	increaseVariables(yytext);
 	printf("token KEYWORDS :%s\n",yytext);
-	//return 0;
+	return 0;
 }
 
 {identifiers} {
@@ -100,7 +105,7 @@ else [.]*
 
 {whiteSpace} {
 	increaseVariables(yytext);
-	printf("token WHITE SPACE :%s\n",yytext);
+	//printf("token WHITE SPACE :%s\n",yytext);
 	return 0;
 }
 
