@@ -2,7 +2,7 @@
 #include <stdio.h>
 #include "mylexer.h"
 //Lines and characters counters
-int lineNum=0;
+int lineNum=1;
 int charsNum=0;
 
 void increaseVariables(char* text);
@@ -30,7 +30,7 @@ delimiterChar ";"|"("|")"|","|"["|"]"|":="|":"|"."
 /*TODO CHECKIT*/
 allSpecialChars {specialChar}|{operatorChar}|{delimiterChar}
 /*TODO FIX IT*/
-string '[^'\n]*'
+string [.]*
 
 
 /*Regex*/
@@ -41,20 +41,20 @@ integer_positive_constants {digits}
 real_positive_constants {digits}[.]{digits}{exp}?
 boolean_constants true|false
 /*TODO: REPLACE with string*/
-constant_strings "\""[0-9a-zA-Z \t\n\r]*"\""
+constant_strings ("\""[^"]*"\"")|("\'"[^']*"\'")
 operators ([.]*{operatorChar}[.]*)|{operatorWord}
 delimiters ([.]*{delimiterChar}[.]*)|{delimiterWord}
 whiteSpace {space}
 /*TODO: REPLACE with string*/
-comments "(*"[0-9a-zA-Z \t\n\r]*"*)"
+comments "(*"[^"]*"*)"
 /*TODO: REPLACE with string*/
-lineComments "//"[0-9a-zA-Z \t\r]*
+lineComments "//"[^"\n]*
 Nline \n
 else .
 
 %%
 
-{Nline} { ++lineNum; }
+{Nline} {++lineNum; }
 
 {boolean_constants} {
 	charsNum+=strlen(yytext);
