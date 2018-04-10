@@ -54,6 +54,8 @@ else .
 
 %%
 
+{Nline} { ++lineNum; }
+
 {boolean_constants} {
 	charsNum+=strlen(yytext);
 	printf("token BOOLEAN: %s\n",yytext);
@@ -123,10 +125,7 @@ else .
 
 <<EOF>> return EOF;
 
-{else} {
-	printf("Unrecognized token %s in line %d \n", yytext,lineNum);
-	return -1;
-}
+{else} { printf("Unrecognized token %s in line %d \n", yytext,lineNum); }
 
 
 
