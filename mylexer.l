@@ -12,7 +12,7 @@ void increaseVariables(char* text);
 
 /*Basic */
 digit [0-9]
-digits [1-9][0-9]*
+digits [0-9][0-9]*
 chara [a-zA-Z]
 
 specialChar [~`@#%^&_{}\\|?]
@@ -30,15 +30,15 @@ delimiterChar ";"|"("|")"|","|"["|"]"|":="|":"|"."
 /*TODO CHECKIT*/
 allSpecialChars {specialChar}|{operatorChar}|{delimiterChar}
 /*TODO FIX IT*/
-string [{digit}{chara}{allSpecialChars}{space}]*
+string '[^'\n]*'
 
 
 /*Regex*/
 keywords {operatorWord}|{delimiterWord}|array|boolean|char|do|else|for|function|goto|if|integer|var|of|while|procedure|program|real|repeat|to|result|return|then|until|downto
 /*TODO: REPLACE WITH {chara},{digits}*/
 identifiers {chara}[a-zA-Z0-9_]*
-integer_positive_constants [0]|{digits}
-real_positive_constants (0|{digits})[.][0-9]+{exp}?
+integer_positive_constants {digits}
+real_positive_constants {digits}[.]{digits}{exp}?
 boolean_constants true|false
 /*TODO: REPLACE with string*/
 constant_strings "\""[0-9a-zA-Z \t\n\r]*"\""
@@ -49,8 +49,8 @@ whiteSpace {space}
 comments "(*"[0-9a-zA-Z \t\n\r]*"*)"
 /*TODO: REPLACE with string*/
 lineComments "//"[0-9a-zA-Z \t\r]*
+Nline \n
 else [.]*
-
 
 %%
 
@@ -83,7 +83,6 @@ else [.]*
 	printf("token BOOLEAN :%s\n",yytext);
 	return 0;
 }
-
 
 {constant_strings} {
 	increaseVariables(yytext);
@@ -121,18 +120,25 @@ else [.]*
 	return 0;
 }
 
+{Nline}  {
+    lineNum++;
+}
+
 {else} {
 	printf("ERROR on line:%d \n",lineNum);
 	return -1;
 }
 
+<<EOF>> return EOF;
+
+
 %%
 
 void main(){
-	while (1==1){
-		yylex();	
+	while(yylex()!=EOF){
+
 	}
-	
+	printf("\nCompleted \nlines Num:%d and char Num:%d\n\n",lineNum,charsNum);
 }
 
 void increaseVariables(char* text){

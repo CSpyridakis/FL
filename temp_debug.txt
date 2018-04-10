@@ -1,10 +1,14 @@
+
+integer 0
+real 0.1
+real 1.124E-213
 integer secondident=8+(a-2);
 (* This is a multy line comment
 With new lines spaces and 	tabs*)
 
 char b_34="This is a string";
 
-//Single line comment 
+//Single line comment
 
 boolean bp:=true;
 
