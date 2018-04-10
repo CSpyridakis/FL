@@ -29,8 +29,6 @@ delimiterChar ";"|"("|")"|","|"["|"]"|":="|":"|"."
 
 /*TODO CHECKIT*/
 allSpecialChars {specialChar}|{operatorChar}|{delimiterChar}
-/*TODO FIX IT*/
-string [.]*
 
 
 /*Regex*/
@@ -40,21 +38,20 @@ identifiers {chara}[a-zA-Z0-9_]*
 integer_positive_constants {digits}
 real_positive_constants {digits}[.]{digits}{exp}?
 boolean_constants true|false
-/*TODO: REPLACE with string*/
-constant_strings ("\""[^"]*"\"")|("\'"[^']*"\'")
+strings ("\""[^"]*"\"")|("\'"[^']*"\'")
 operators ([.]*{operatorChar}[.]*)|{operatorWord}
 delimiters ([.]*{delimiterChar}[.]*)|{delimiterWord}
 whiteSpace {space}
-/*TODO: REPLACE with string*/
 comments "(*"[^"]*"*)"
-/*TODO: REPLACE with string*/
 lineComments "//"[^"\n]*
-Nline \n
+Nline [\n]+
 else .
 
 %%
 
-{Nline} {++lineNum; }
+{Nline} {
+    lineNum+=strlen(yytext);
+}
 
 {boolean_constants} {
 	charsNum+=strlen(yytext);
@@ -86,7 +83,13 @@ else .
 	return 0;
 }
 
-{constant_strings} {
+{strings} {
+    int i,st=strlen(yytext);
+    for(i=0;i<st;i++){
+        if(yytext[i]=='\n'){
+            lineNum++;
+        }
+    }
 	charsNum+=strlen(yytext);
 	printf("token CONSTANT STRING: %s\n",yytext);
 	return 0;
@@ -111,6 +114,12 @@ else .
 }
 
 {comments} {
+    int i,st=strlen(yytext);
+    for(i=0;i<st;i++){
+        if(yytext[i]=='\n'){
+            lineNum++;
+        }
+    }
 	charsNum+=strlen(yytext);
 	//printf("token  COMMENTS: %s\n",yytext);
 	return 0;
