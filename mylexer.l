@@ -50,7 +50,7 @@ comments "(*"[0-9a-zA-Z \t\n\r]*"*)"
 /*TODO: REPLACE with string*/
 lineComments "//"[0-9a-zA-Z \t\r]*
 Nline \n
-else [.]*
+else .
 
 %%
 
@@ -128,7 +128,7 @@ else [.]*
 <<EOF>> return EOF;
 
 {else} {
-	printf("ERROR on line:%d \n",lineNum);
+	printf("Unrecognized token %s in line %d \n", yytext,lineNum);
 	return -1;
 }
 
