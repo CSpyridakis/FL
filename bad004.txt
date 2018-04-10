@@ -1,5 +1,5 @@
 program foo ;
-
+    true
 	function foo() : integer;
 	begin
 	(* extra semicolon *)

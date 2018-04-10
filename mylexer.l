@@ -54,76 +54,72 @@ else [.]*
 
 %%
 
+{boolean_constants} {
+	charsNum+=strlen(yytext);
+	printf("token BOOLEAN: %s\n",yytext);
+	return 0;
+}
+
 {keywords} {
 	charsNum+=strlen(yytext);
-	printf("token KEYWORDS :%s\n",yytext);
+	printf("token KEYWORDS: %s\n",yytext);
 	return 0;
 }
 
 {identifiers} {
 	charsNum+=strlen(yytext);
-	printf("token IDENTIFIERS :%s\n",yytext);
+	printf("token IDENTIFIERS: %s\n",yytext);
 	return 0;
 }
 
 {integer_positive_constants} {
 	charsNum+=strlen(yytext);
-	printf("token INTEGER :%s\n",yytext);
+	printf("token INTEGER: %s\n",yytext);
 	return 0;
 }
 
 {real_positive_constants} {
 	charsNum+=strlen(yytext);
-	printf("token REAL :%s\n",yytext);
-	return 0;
-}
-
-{boolean_constants} {
-	charsNum+=strlen(yytext);
-	printf("token BOOLEAN :%s\n",yytext);
+	printf("token REAL: %s\n",yytext);
 	return 0;
 }
 
 {constant_strings} {
 	charsNum+=strlen(yytext);
-	printf("token CONSTANT STRING :%s\n",yytext);
+	printf("token CONSTANT STRING: %s\n",yytext);
 	return 0;
 }
 
 {operators} {
 	charsNum+=strlen(yytext);
-	printf("token OPERATOR :%s\n",yytext);
+	printf("token OPERATOR: %s\n",yytext);
 	return 0;
 }
 
 {delimiters} {
 	charsNum+=strlen(yytext);
-	printf("token DELIMITER :%s\n",yytext);
+	printf("token DELIMITER: %s\n",yytext);
 	return 0;
 }
 
 {whiteSpace} {
 	charsNum+=strlen(yytext);
-	//printf("token WHITE SPACE :%s\n",yytext);
+	//printf("token WHITE SPACE: %s\n",yytext);
 	return 0;
 }
 
 {comments} {
 	charsNum+=strlen(yytext);
-	//printf("token  COMMENTS :%s\n",yytext);
+	//printf("token  COMMENTS: %s\n",yytext);
 	return 0;
 }
 
 {lineComments} {
 	charsNum+=strlen(yytext);
-	//printf("token LINE COMMENTS :%s\n",yytext);
+	//printf("token LINE COMMENTS: %s\n",yytext);
 	return 0;
 }
 
-\n  {
-    charsNum=0;
-    lineNum++;
-}
 
 <<EOF>> return EOF;
 
