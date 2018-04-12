@@ -37,63 +37,62 @@ STRING  '[^']*'|\"[^\"]*\"
 
 %%
 
-"true"|"false" 	{ fprintf(stderr,  "token BOOLEAN: %s\n", yytext); }
-
-begin   { fprintf(stderr,  "token DELIM_BEGIN: %s\n", yytext); return KW_BEGIN; }
-end	    { fprintf(stderr,  "token DELIM_END: %s\n", yytext); return KW_END; }
+begin   { fprintf(stderr,  "token DELIM_BEGIN: %s\n", yytext);     return KW_BEGIN; }
+end	    { fprintf(stderr,  "token DELIM_END: %s\n", yytext);       return KW_END; }
 ";"		{ fprintf(stderr,  "token DELIM_SEMICOLON: %s\n", yytext); return ';'; }
 "("		{ fprintf(stderr,  "token DELIM_L_PARENTH: %s\n", yytext); return '(';}
 ")"		{ fprintf(stderr,  "token DELIM_R_PARENTH: %s\n", yytext); return ')';}
-","		{ fprintf(stderr,  "token DELIM_COMMA: %s\n", yytext); }
-"["		{ fprintf(stderr,  "token DELIM_L_BRACKET: %s\n", yytext); }
-"]"		{ fprintf(stderr,  "token DELIM_R_BRACKET: %s\n", yytext); }
-":"		{ fprintf(stderr,  "token DELIM_COLON: %s\n", yytext); }
-"."		{ fprintf(stderr,  "token DELIM_FULLSTOP: %s\n", yytext); return '.'; }
+","		{ fprintf(stderr,  "token DELIM_COMMA: %s\n", yytext);     return ','; }
+"["		{ fprintf(stderr,  "token DELIM_L_BRACKET: %s\n", yytext); return '['; }
+"]"		{ fprintf(stderr,  "token DELIM_R_BRACKET: %s\n", yytext); return ']';}
+":"		{ fprintf(stderr,  "token DELIM_COLON: %s\n", yytext); 	   return ':'; }
+"."		{ fprintf(stderr,  "token DELIM_FULLSTOP: %s\n", yytext);  return '.'; }
 
-"+" 	{ fprintf(stderr,  "token OP_ADD: %s\n", yytext); return '+';  }
+"+" 	{ fprintf(stderr,  "token OP_ADD: %s\n", yytext); return '+'; }
 "-"		{ fprintf(stderr,  "token OP_SUB: %s\n", yytext); return '-'; }
 "*"		{ fprintf(stderr,  "token OP_MUL: %s\n", yytext); return '*'; }
 "/"|div	{ fprintf(stderr,  "token OP_DIV: %s\n", yytext); return '/'; }
-mod	    { fprintf(stderr,  "token OP_MOD: %s\n", yytext); }
+mod	    { fprintf(stderr,  "token OP_MOD: %s\n", yytext); return '%'; }
 
-"="		{ fprintf(stderr,  "token OP_EQ: %s\n", yytext); }
-"<>"	{ fprintf(stderr,  "token OP_INEQ: %s\n", yytext); } 
-"<"		{ fprintf(stderr,  "token OP_LT: %s\n", yytext); }
-"<="	{ fprintf(stderr,  "token OP_LTE: %s\n", yytext); }
-">"		{ fprintf(stderr,  "token OP_GT: %s\n", yytext); }
-">="	{ fprintf(stderr,  "token OP_GTE: %s\n", yytext); }
+"="		{ fprintf(stderr,  "token OP_EQ: %s\n", yytext);   return OP_EQ; }
+"<>"	{ fprintf(stderr,  "token OP_INEQ: %s\n", yytext); return OP_INEQ; } 
+"<"		{ fprintf(stderr,  "token OP_LT: %s\n", yytext);   return OP_LT; }
+"<="	{ fprintf(stderr,  "token OP_LTE: %s\n", yytext);  return OP_LTE; }
+">"		{ fprintf(stderr,  "token OP_GT: %s\n", yytext);   return OP_GT; }
+">="	{ fprintf(stderr,  "token OP_GTE: %s\n", yytext);  return OP_GTE; }
 
-and|"&&" { fprintf(stderr,  "token OP_AND: %s\n", yytext); }
-or|"||"  { fprintf(stderr,  "token OP_OR: %s\n", yytext); }
-not|"!"	 { fprintf(stderr,  "token OP_NOT: %s\n", yytext); }
-":="	 { fprintf(stderr,  "token OP_ASSIGN: %s\n", yytext); }
+and|"&&" { fprintf(stderr,  "token OP_AND: %s\n", yytext);     return OP_AND; }
+or|"||"  { fprintf(stderr,  "token OP_OR: %s\n", yytext);      return OP_OR; }
+not|"!"	 { fprintf(stderr,  "token OP_NOT: %s\n", yytext);     return OP_NOT; }
+":="	 { fprintf(stderr,  "token OP_ASSIGN: %s\n", yytext);  return OP_ASSIGN; }
 
-"("{DATA_TYPE}")" 	{ fprintf(stderr,  "token OP_CAST: %s\n", yytext); }
+"("{DATA_TYPE}")" 	{ fprintf(stderr,  "token OP_CAST: %s\n", yytext); return OP_CAST; }
 
-function { fprintf(stderr,  "token KEYWORD_FUNCTION: %s\n", yytext); }
-procedure { fprintf(stderr,  "token KEYWORD_PROCED: %s\n", yytext); }
-result { fprintf(stderr,  "token KEYWORD_RESULT: %s\n", yytext); }
-array { fprintf(stderr,  "token KEYWORD_ARRAY: %s\n", yytext); }
-do { fprintf(stderr,  "token KEYWORD_DO: %s\n", yytext); }
-goto { fprintf(stderr,  "token KEYWORD_GOTO: %s\n", yytext); }
-program	{ fprintf(stderr,  "token KEYWORD_PROGRAM"); return KW_PROGRAM; }
-return { fprintf(stderr,  "token KEYWORD_RETURN: %s\n", yytext); }
-boolean { fprintf(stderr,  "token KEYWORD_BOOLEAN: %s\n", yytext); }
-else { fprintf(stderr,  "token KEYWORD_ELSE: %s\n", yytext); }
-if { fprintf(stderr,  "token KEYWORD_IF: %s\n", yytext); }
-of { fprintf(stderr,  "token KEYWORD_OF: %s\n", yytext); }
-real { fprintf(stderr,  "token KEYWORD_REAL: %s\n", yytext); }
-then { fprintf(stderr,  "token KEYWORD_THEN: %s\n", yytext); }
-char { fprintf(stderr,  "token KEYWORD_CHAR: %s\n", yytext); }
-for { fprintf(stderr,  "token KEYWORD_FOR: %s\n", yytext); }
-integer { fprintf(stderr,  "token KEYWORD_INTEGER: %s\n", yytext); }
-repeat { fprintf(stderr,  "token KEYWORD_REPEAT: %s\n", yytext); }
-until { fprintf(stderr,  "token KEYWORD_UNTIL: %s\n", yytext); }
-var { fprintf(stderr,  "token KEYWORD_VAR: %s\n", yytext); }
-while { fprintf(stderr,  "token KEYWORD_WHILE: %s\n", yytext); }
-to { fprintf(stderr,  "token KEYWORD_TO: %s\n", yytext); }
-downto { fprintf(stderr,  "token KEYWORD_DOWNTO: %s\n", yytext); }
-
+function { fprintf(stderr,  "token KEYWORD_FUNCTION: %s\n", yytext); return KW_FUNC; }
+procedure { fprintf(stderr,  "token KEYWORD_PROCED: %s\n", yytext);  return KW_PROC; }
+result { fprintf(stderr,  "token KEYWORD_RESULT: %s\n", yytext); 	 return KW_RESULT; }
+array { fprintf(stderr,  "token KEYWORD_ARRAY: %s\n", yytext); 		 return KW_ARRAY; }
+do { fprintf(stderr,  "token KEYWORD_DO: %s\n", yytext); 			 return KW_DO; }
+goto { fprintf(stderr,  "token KEYWORD_GOTO: %s\n", yytext); 		 return KW_GOTO; }
+program	{ fprintf(stderr,  "token KEYWORD_PROGRAM: %s\n", yytext);   return KW_PROGRAM; }
+return { fprintf(stderr,  "token KEYWORD_RETURN: %s\n", yytext); 	 return KW_RETURN; }
+boolean { fprintf(stderr,  "token KEYWORD_BOOLEAN: %s\n", yytext); 	 return KW_BOOLEAN; }
+else { fprintf(stderr,  "token KEYWORD_ELSE: %s\n", yytext); 		 return KW_ELSE; }
+if { fprintf(stderr,  "token KEYWORD_IF: %s\n", yytext); 			 return KW_IF; } 
+of { fprintf(stderr,  "token KEYWORD_OF: %s\n", yytext); 			 return KW_OF; }
+real { fprintf(stderr,  "token KEYWORD_REAL: %s\n", yytext); 		 return KW_REAL; }
+then { fprintf(stderr,  "token KEYWORD_THEN: %s\n", yytext); 		 return KW_THEN; }
+char { fprintf(stderr,  "token KEYWORD_CHAR: %s\n", yytext); 		 return KW_CHAR; }
+for { fprintf(stderr,  "token KEYWORD_FOR: %s\n", yytext); 		     return KW_FOR; }
+integer { fprintf(stderr,  "token KEYWORD_INTEGER: %s\n", yytext);   return KW_INT; }
+repeat { fprintf(stderr,  "token KEYWORD_REPEAT: %s\n", yytext); 	 return KW_REPEAT; }
+until { fprintf(stderr,  "token KEYWORD_UNTIL: %s\n", yytext); 		 return KW_UNTIL; }
+var { fprintf(stderr,  "token KEYWORD_VAR: %s\n", yytext); 			 return KW_VAR; }
+while { fprintf(stderr,  "token KEYWORD_WHILE: %s\n", yytext); 		 return KW_WHILE; } 
+to { fprintf(stderr,  "token KEYWORD_TO: %s\n", yytext); 			 return KW_TO; }
+downto { fprintf(stderr,  "token KEYWORD_DOWNTO: %s\n", yytext); 	 return KW_DOWNTO; }
+true  { fprintf(stderr,  "token KEYWORD_TRUE: %s\n", yytext); 		 return KW_TRUE; }
+false { fprintf(stderr,  "token KEYWORD_FALSE: %s\n", yytext); 		 return KW_FALSE; }
 
 @defmacro[ \r\t]+       BEGIN(macro);
 <macro>{ID}             {	
