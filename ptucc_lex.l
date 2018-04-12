@@ -51,10 +51,9 @@ end	    { fprintf(stderr,  "token DELIM_END: %s\n", yytext); return KW_END; }
 "."		{ fprintf(stderr,  "token DELIM_FULLSTOP: %s\n", yytext); return '.'; }
 
 "+" 	{ fprintf(stderr,  "token OP_ADD: %s\n", yytext); return '+';  }
-"-"		{ fprintf(stderr,  "token OP_SUBTRACT: %s\n", yytext); return '-'; }
-"*"		{ fprintf(stderr,  "token OP_MULTIPLY: %s\n", yytext); return '*'; }
-"/"		{ fprintf(stderr,  "token OP_DIVIDE: %s\n", yytext); return '/'; }
-div	    { fprintf(stderr,  "token OP_DIV: %s\n", yytext); }
+"-"		{ fprintf(stderr,  "token OP_SUB: %s\n", yytext); return '-'; }
+"*"		{ fprintf(stderr,  "token OP_MUL: %s\n", yytext); return '*'; }
+"/"|div	{ fprintf(stderr,  "token OP_DIV: %s\n", yytext); return '/'; }
 mod	    { fprintf(stderr,  "token OP_MOD: %s\n", yytext); }
 
 "="		{ fprintf(stderr,  "token OP_EQ: %s\n", yytext); }
@@ -64,16 +63,12 @@ mod	    { fprintf(stderr,  "token OP_MOD: %s\n", yytext); }
 ">"		{ fprintf(stderr,  "token OP_GT: %s\n", yytext); }
 ">="	{ fprintf(stderr,  "token OP_GTE: %s\n", yytext); }
 
-and		{ fprintf(stderr,  "token OP_AND: %s\n", yytext); }
-or 		{ fprintf(stderr,  "token OP_OR: %s\n", yytext); }
-not		{ fprintf(stderr,  "token OP_NOT: %s\n", yytext); }
-"&&"	{ fprintf(stderr,  "token OP_AND: %s\n", yytext); }
-"||"	{ fprintf(stderr,  "token OP_OR: %s\n", yytext); }
-"!"		{ fprintf(stderr,  "token OP_NOT: %s\n", yytext); }
+and|"&&" { fprintf(stderr,  "token OP_AND: %s\n", yytext); }
+or|"||"  { fprintf(stderr,  "token OP_OR: %s\n", yytext); }
+not|"!"	 { fprintf(stderr,  "token OP_NOT: %s\n", yytext); }
+":="	 { fprintf(stderr,  "token OP_ASSIGN: %s\n", yytext); }
 
-":="	{ fprintf(stderr,  "token OP_ASSIGNMENT: %s\n", yytext); }
-
-"("{DATA_TYPE}")" 	{ fprintf(stderr,  "token OP_LT: %s\n", yytext); }
+"("{DATA_TYPE}")" 	{ fprintf(stderr,  "token OP_CAST: %s\n", yytext); }
 
 function { fprintf(stderr,  "token KEYWORD_FUNCTION: %s\n", yytext); }
 procedure { fprintf(stderr,  "token KEYWORD_PROCED: %s\n", yytext); }
