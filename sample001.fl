@@ -13,7 +13,7 @@ var
 	ambivalent_a, c: array of boolean;
 
 function some_func(): real;
-var b: boolean;
+var d: boolean;
 procedure some_proc();
 begin
 	writeString('Hello world');
