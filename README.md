@@ -1,11 +1,11 @@
-## Fictional Language to C Compiler 
+# Fictional Language to C Compiler 
  (a "Theory of Computation" course project using flex & bison)
 
-# Build:
+## Build:
 
   touch .depend
   make
 
-# Test:
+## Test:
 
   ptucc < in.fl > out.c
