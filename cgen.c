@@ -77,8 +77,3 @@ const char* c_prologue =
 "#include \"ptuclib.h\"\n"
 "\n"
 ;
-
-
-
-
-

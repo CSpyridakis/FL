@@ -3,7 +3,18 @@
 *)
 
 program foo;
+var 
+	x,y,z: integer;
+	h: char;
+	kati, kati_allo: boolean;
+	something: char;
+	a: array[1] of integer;
+	kiallo_a, b: array[12][54] of char;
+	ambivalent_a, c: array of boolean;
 
+function some_func(): real;
+var b: boolean;
+procedure some_proc();
 begin
 	writeString('Hello world');
 	writeString('\n')
