@@ -108,8 +108,7 @@ var_assign: var_assign var_assign { $$ = template("%s%s", $1, $2); }
 	      									  	char type[type_part_len+1];
 	      									  	strncpy(type, comp_type_str, type_part_len);
 	      									  	type[type_part_len] = '\0';
-	      									  	printf("%s\n", type );
-
+	      									  	
 	      									  	// Remove "array:" signifier
 	      									  	strcpy(type, strpbrk(type, ":")); 
 	      									  	memmove(type, type+1, strlen(type));
