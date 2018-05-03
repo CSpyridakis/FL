@@ -4,6 +4,7 @@
 ## Build:
 
   touch .depend
+  
   make
 
 ## Test:
