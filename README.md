@@ -9,4 +9,4 @@
 
 ## Test:
 
-  ptucc < in.fl > out.c
+  ptucc < sample001.fl > sample001.c
