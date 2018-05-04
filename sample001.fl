@@ -12,9 +12,12 @@ var
 	kiallo_a, b: array[12][54] of char;
 	ambivalent_a, c: array of boolean;
 
-function some_func(): real;
+function func1(a, b, c: char; d, f: real; klp, _klp: char): array of char;
+function func2(a, b, c, d, e, f, g: integer): array of real;
+
 var d: boolean;
-procedure some_proc();
+
+procedure some_proc(uu: integer; ii, oo: boolean);
 begin
 	writeString('Hello world');
 	writeString('\n')
