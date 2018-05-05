@@ -224,7 +224,7 @@ bracket_list: %empty					  { $$ = ""; };
 
 type: KW_CHAR { $$ = template("%s", "char"); }
     | KW_INT  { $$ = template("%s", "int"); }
-    | KW_REAL { $$ = template("%s", "float"); }
+    | KW_REAL { $$ = template("%s", "double"); }
     | KW_BOOLEAN { $$ = template("%s", "int"); }
 	      ;
 
