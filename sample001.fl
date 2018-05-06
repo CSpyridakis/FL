@@ -9,11 +9,11 @@ var
 	kati, kati_allo: boolean;
 	something: char;
 	a: array[1] of integer;
-	kiallo_a, b: array[12][54] of char;
+	kiallo_a, b: array[12][54] of array of array of char;
 	ambivalent_a, c: array of boolean;
 
 function func1(a, b, c: char; d, f: real; klp, _klp: char): array of char;
-function func2(a, b, c, d, e, f, g: integer): array of real;
+function func2(a, b, c, d, e, f, g: integer): array of array of array of array of real;
 
 var d: boolean;
 
