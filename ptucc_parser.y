@@ -7,6 +7,7 @@
 
 extern int yylex(void);
 extern int line_num;
+const char comma[2] = ",";				      	
 
 char* concat(const char *s1, const char *s2){
     char* result;
@@ -22,73 +23,120 @@ char* concat(const char *s1, const char *s2){
 
 char* make_C_decl(char* comp_type, char* var_list){
 	char* result = NULL;
-		  
+	// comp_type = "***int[14][3]";
+	char* last_asterisk = strrchr(comp_type, '*');
+	char* asterisks = NULL;
+	char* brackets_part = NULL;
+	char* prim_type = NULL;
+
+	if(last_asterisk){ 
+		// Get asterisks part
+		int asterisks_len = strlen(comp_type) - strlen(last_asterisk) + 1;
+		asterisks = (char*) malloc(asterisks_len + 1);
+		strncpy(asterisks, comp_type, asterisks_len);
+		asterisks[asterisks_len] = '\0';
+	}
+			  
 	// Get brackets part
-	char* brackets_part = strpbrk(comp_type, "[");
-	  
+	brackets_part = strpbrk(comp_type, "[");
+
+	// Get primitive type part 
+	if(brackets_part!=NULL && asterisks!=NULL){
+		prim_type = (char*) calloc(strlen("double") + 1, sizeof(char));
+		int len = (int) (brackets_part - last_asterisk);
+		memcpy( prim_type, (last_asterisk+1), len-1 );
+		prim_type[sizeof(prim_type) - 1] = '\0';		
+	}else if(brackets_part){
+		prim_type = (char*) calloc(strlen("double") + 1, sizeof(char));
+		int len = (int) (brackets_part - comp_type);
+		memcpy( prim_type, comp_type, len );
+		prim_type[sizeof(prim_type) - 1] = '\0';					    
+	}else if(asterisks){
+		prim_type = (char*) calloc(strlen("double") + 1, sizeof(char));
+		memcpy( prim_type, (last_asterisk+1), strlen(last_asterisk+1));
+		prim_type[sizeof(prim_type) - 1] = '\0';					    
+	}else
+		prim_type = comp_type;
+
+	
+	// Prepare ptr_type to avoid asterisk-checking hassle
+	char* ptr_type = NULL;
+	if(asterisks) ptr_type = concat(prim_type, asterisks);
+	else ptr_type = prim_type;
+
+	// Append brackets part to vars of var_list and get result
 	if(brackets_part){
-		// Get type part 
-	  	int type_part_len = abs(strlen(comp_type) - strlen(brackets_part));
-	  	char type[type_part_len+1];
-	  	strncpy(type, comp_type, type_part_len);
-	  	type[type_part_len] = '\0';
-		  	
-	  	// Remove "array:" signifier
-	  	strcpy(type, strpbrk(type, ":")); 
-	  	memmove(type, type+1, strlen(type));
 
-	  	// @TODO (edge-case): 
-	  	//       make into a for loop that breaks up (var_list)
-	  	//       (when it is a comma-separated list) into 
-	  	//       separate declarations
-	  	result = template("%s %s;\n", type, strcat(var_list, brackets_part)); 
-	  }else{
-	  	char* type = strpbrk(comp_type, ":");
-	  	if(type){ // comp_type_str starts with ":"
-	  		
-	  		// Remove "array:" signifier
-	  		strcpy(type, strpbrk(type, ":")); 
-	  		memmove(type, type+1, strlen(type));
+		// Get first var
+		char* first_var = strtok(var_list, comma);
+		
+		/* If second var (next_var) is non-NULL 
+		then var_list is a comma-separated list */
+		char* next_var = strtok(NULL, comma);
+		if(!next_var) result = template("%s %s%s", ptr_type, var_list, brackets_part);
+		else{	
 
-	  		result = template("%s %s;\n", strcat(type,"*"), var_list); 
-	  	}
-	  	else
-		  result = template("%s %s;\n", comp_type, var_list);
-	  }
+			char* var_l_w_b_part = NULL;
 
-	  return result;  
+			char* comma_and_space = concat(comma, " ");
+			char* first_var_w_b = concat(concat(" ", first_var), brackets_part);
+			var_l_w_b_part = concat(first_var_w_b, comma_and_space);
+
+			// Init to " {first_var}{brackers_part}, {next_var}{brackets_part}"
+			var_l_w_b_part = concat(var_l_w_b_part, next_var);
+			var_l_w_b_part = concat(var_l_w_b_part, brackets_part);
+
+				
+			/* Walk through rest of var_list, fetch other vars 
+			   and construct {next_var}{brackets_part} */
+			do{
+			  
+			  next_var = strtok(NULL, comma);
+			  if(next_var){
+			  	  var_l_w_b_part = concat(var_l_w_b_part, comma_and_space);
+				  var_l_w_b_part = concat(var_l_w_b_part, concat(next_var, brackets_part));
+			  }
+
+			}while(next_var);
+
+			result = template("%s %s", ptr_type, var_l_w_b_part);
+		}
+	
+	}else 
+		result = template("%s %s", ptr_type, var_list);
+
+  	return concat(result,";\n");
 }
 
 char* make_C_param_list(char* type, char* var_list){
 	char* result = NULL; 
-	// fprintf(stderr, "VAR_LIST = %s\n", var_list);					
-	const char comma[2] = ",";				      	
+	
 	// Get first var
 	char* first_var = strtok(var_list, comma);
 	                                        
-	/* If second var (other_var) is non-NULL 
+	/* If second var (next_var) is non-NULL 
 	   then var_list is a comma-separated list */
-	char* other_var = strtok(NULL, comma);
-	if(!other_var) 
+	char* next_var = strtok(NULL, comma);
+	if(!next_var) 
 		return template("%s %s", type, var_list);
 	else{	
-		// fprintf(stderr, " %s\n", other_var);
-		// Init to "type first_var, type other_var"
+		
+		// Init to "type first_var, type next_var"
 		char* type_and_space = concat(type, " ");
 		char* comma_and_space = concat(comma, " ");
-                char* first_param = concat(concat(type_and_space, first_var), comma_and_space);
-		result = concat(first_param, concat(type_and_space, other_var));
+        char* first_param = concat(concat(type_and_space, first_var), comma_and_space);
+		result = concat(first_param, concat(type_and_space, next_var));
+	   	
 	   	/* Walk through rest of var_list,
 		   fetch other vars and construct C param list */
-		// fprintf(stderr, "Before While Result:%s\n", result);					   	
 		do{
-		  other_var = strtok(NULL, comma);
-		  if(other_var){
+		  next_var = strtok(NULL, comma);
+		  if(next_var){
 			  result = concat(result, comma_and_space);
-			  result = concat(result, concat(type_and_space, other_var));
+			  result = concat(result, concat(type_and_space, next_var));
 		  }
-	      	  // fprintf(stderr, "In Result:%s\n", result);
-		}while(other_var);
+	     
+		}while(next_var);
 	
 		return result;
 	}
@@ -96,20 +144,39 @@ char* make_C_param_list(char* type, char* var_list){
 }
 
 char* make_C_return_type(char* comp_type){
-	char* type = strpbrk(comp_type, ":");
-	if(type){ // comp_type_str starts with ":"	
-		// Remove "array:" signifier
-		strcpy(type, strpbrk(type, ":")); 
-		memmove(type, type+1, strlen(type));
-			
-		return strcat(type,"*");
+	char* last_asterisk = strrchr(comp_type, '*');
+	char* asterisks = NULL;
+	char* prim_type = NULL;
+	
+	if(last_asterisk){ // comp_type starts with "*"	
+		
+		// Get asterisks part
+		int asterisks_len = strlen(comp_type) - strlen(last_asterisk) + 1;
+		asterisks = (char*) malloc(asterisks_len + 1);
+		strncpy(asterisks, comp_type, asterisks_len);
+		asterisks[asterisks_len] = '\0';
+
+		// Get primitive type part 
+		prim_type = (char*) calloc(strlen("double") + 1, sizeof(char));
+		memcpy( prim_type, (last_asterisk+1), strlen(last_asterisk+1));
+		prim_type[sizeof(prim_type) - 1] = '\0';
+		
+		// Append asterisks part to primitive type part
+		prim_type = concat(prim_type, asterisks);					    
+
 	}else
-		return comp_type;
-	
-	
+		prim_type = comp_type;
+
+	return prim_type;
 }
 
-
+char* make_parsable_comp_type(char* comp_type, char* bracket_list){
+	char* result = NULL;
+	int br_l_empty = !strcmp(bracket_list, "");
+	if(br_l_empty) result = concat("*", comp_type);
+	else result = concat(comp_type, bracket_list);
+	return result;
+}
 
 %}
 
@@ -215,7 +282,7 @@ var_list: IDENT
         ; 
 
 compound_type: type
-	     | KW_ARRAY bracket_list KW_OF compound_type { $$ = template(":%s%s", $4, $2); }
+	     | KW_ARRAY bracket_list KW_OF compound_type { $$ = make_parsable_comp_type($4, $2); }
              ;
 
 bracket_list: %empty					  { $$ = ""; };
