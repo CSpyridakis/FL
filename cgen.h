@@ -38,10 +38,32 @@ extern int yyerror_count;
 extern const char* c_prologue;
 
 /*
- Make a C string literal out of a PTUC string literal.
- Return the corrected string (maybe the same as P).
+  Make a C string literal out of a PTUC string literal.
+  Return the corrected string (maybe the same as P).
 */
 char* string_ptuc2c(char* P);
+
+/* 
+	String manipulation functions 
+*/
+
+///
+//  Concatenate two strings (memory-wisely) 
+///
+char* concat(const char *s1, const char *s2);
+
+/* 
+	C-formatting functions 
+*/ 
+
+char* make_C_decl(char* comp_type, char* var_list);
+
+char* make_C_param_list(char* type, char* var_list);
+
+char* make_C_return_type(char* comp_type);
+
+char* make_C_parsable_comp_type(char* comp_type, char* bracket_list);
+
 
 
 #endif
