@@ -88,10 +88,21 @@ char* concat(const char *s1, const char *s2){
     } 
 }
 
+char* str_repeat(const char * s, int n) {
+  size_t slen = strlen(s);
+  char * dest = malloc(n*slen+1);
+ 
+  int i; char * p;
+  for ( i=0, p = dest; i < n; ++i, p += slen ) {
+    memcpy(p, s, slen);
+  }
+  *p = '\0';
+  return dest;
+}
+
 /* 
 	C-formatting functions 
 */ 
-
 
 char* make_C_decl(char* comp_type, char* var_list){
 	char* result = NULL;
@@ -196,7 +207,7 @@ char* make_C_params(char* type, char* var_list){
 		// Init to "type first_var, type next_var"
 		char* type_and_space = concat(type, " ");
 		char* comma_and_space = concat(comma, " ");
-        char* first_param = concat(concat(type_and_space, first_var), comma_and_space);
+        	char* first_param = concat(concat(type_and_space, first_var), comma_and_space);
 		result = concat(first_param, concat(type_and_space, next_var));
 	   	
 	   	/* Walk through rest of var_list,
@@ -217,9 +228,14 @@ char* make_C_params(char* type, char* var_list){
 
 char* make_C_comp_type(char* comp_type){
 	char* last_asterisk = strrchr(comp_type, '*');
+	char* brackets = strpbrk(comp_type, "[");
 	char* asterisks = NULL;
-	char* prim_type = NULL;
-	
+	char* C_comp_type = NULL;
+	// Allocate to max and set to 0
+	char* prim_type = (char*) calloc(strlen("double") + 1, sizeof(char));
+	fprintf(stderr, "~~~~INITIAL TYPE:%s\n", comp_type);
+	// fprintf(stderr, "~~~~RETURN TYPE:%s\n", C_comp_type);
+
 	if(last_asterisk){ // comp_type starts with "*"	
 		
 		// Get asterisks part
@@ -227,20 +243,47 @@ char* make_C_comp_type(char* comp_type){
 		asterisks = (char*) malloc(asterisks_len + 1);
 		strncpy(asterisks, comp_type, asterisks_len);
 		asterisks[asterisks_len] = '\0';
-
-		// Get primitive type part 
-		prim_type = (char*) calloc(strlen("double") + 1, sizeof(char));
-		memcpy( prim_type, (last_asterisk+1), strlen(last_asterisk+1));
-		prim_type[sizeof(prim_type) - 1] = '\0';
 		
-		// Append asterisks part to primitive type part
-		prim_type = concat(prim_type, asterisks);					    
+		/* Get primitive type part (might contain brackets)
+		   & append appropriate number of asteriks */
+		if(brackets){
+			fprintf(stderr, "@@@@@@@@@@@@@\n");
+			memcpy( prim_type, (last_asterisk+1),  brackets - last_asterisk - 1 );			
+			prim_type[sizeof(prim_type) - 1] = '\0';
+			// Append prefix asterisks
+			C_comp_type = concat(prim_type, asterisks);			
+			
+			// Append postfix asterisks 
+			int b_ptr_num = strlen(brackets)/BRACKETS_SIZE;
+			char* b_ptrs = str_repeat("*", b_ptr_num);
+			C_comp_type = concat(C_comp_type, b_ptrs);
+		}
+		else{			
+			memcpy( prim_type, (last_asterisk+1), strlen(last_asterisk+1));
+			prim_type[sizeof(prim_type) - 1] = '\0';			
+			// Append asterisks 
+			C_comp_type = concat(prim_type, asterisks);			
+			
+		}
 
-	}else
-		prim_type = comp_type;
+	}else{
+		/* Get primitive type part (might contain brackets)
+		   & append appropriate number of asteriks */
+		if(brackets){
+			memcpy( prim_type, comp_type, brackets - comp_type +1);
+			prim_type[sizeof(prim_type) - 1] = '\0';
+			
+			// Append postfix asterisks 
+			int b_ptr_num = strlen(brackets)/BRACKETS_SIZE;
+			char* b_ptrs = str_repeat("*", b_ptr_num);
+			C_comp_type = concat(prim_type, b_ptrs);
+		}
+		else	
+			C_comp_type = comp_type;
+	}
 	
-	fprintf(stderr, "@@@@PRIM_TYPE:%s", prim_type);
-	return prim_type;
+	
+	return C_comp_type;
 }
 
 char* make_parsable_comp_type(char* comp_type, char* bracket_list){

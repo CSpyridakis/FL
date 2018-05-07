@@ -1,6 +1,8 @@
 #ifndef CGEN_H
 #define CGEN_H
 
+#define BRACKETS_SIZE 3
+
 /*
 	String streams are handy for using standard C-library
 	functions to produce formatted strings.
@@ -51,6 +53,11 @@ char* string_ptuc2c(char* P);
 //  Concatenate two strings (memory-wisely) 
 ///
 char* concat(const char *s1, const char *s2);
+
+///
+//  Repeat s n times
+///
+char* str_repeat(const char * s, int n);
 
 /* 
 	C-formatting functions 
