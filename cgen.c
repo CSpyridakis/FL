@@ -234,10 +234,8 @@ char* make_C_comp_type(char* comp_type){
 	// Allocate to max and set to 0
 	char* prim_type = (char*) calloc(strlen("double") + 1, sizeof(char));
 	fprintf(stderr, "~~~~INITIAL TYPE:%s\n", comp_type);
-	// fprintf(stderr, "~~~~RETURN TYPE:%s\n", C_comp_type);
 
 	if(last_asterisk){ // comp_type starts with "*"	
-		
 		// Get asterisks part
 		int asterisks_len = strlen(comp_type) - strlen(last_asterisk) + 1;
 		asterisks = (char*) malloc(asterisks_len + 1);
@@ -253,10 +251,15 @@ char* make_C_comp_type(char* comp_type){
 			// Append prefix asterisks
 			C_comp_type = concat(prim_type, asterisks);			
 			
-			// Append postfix asterisks 
-			int b_ptr_num = strlen(brackets)/BRACKETS_SIZE;
-			char* b_ptrs = str_repeat("*", b_ptr_num);
-			C_comp_type = concat(C_comp_type, b_ptrs);
+			// Calculate postfix asterisks 
+			int i;
+			for (i=0; brackets[i]; brackets[i]=='[' ? i++ : *brackets++);
+			int this_many_ptrs = i;			
+			char* ptrs = str_repeat("*", this_many_ptrs);
+			
+			// and append			
+			C_comp_type = concat(C_comp_type, ptrs);
+			
 		}
 		else{			
 			memcpy( prim_type, (last_asterisk+1), strlen(last_asterisk+1));
@@ -270,13 +273,18 @@ char* make_C_comp_type(char* comp_type){
 		/* Get primitive type part (might contain brackets)
 		   & append appropriate number of asteriks */
 		if(brackets){
-			memcpy( prim_type, comp_type, brackets - comp_type +1);
+			memcpy( prim_type, comp_type, brackets - comp_type);
 			prim_type[sizeof(prim_type) - 1] = '\0';
+			fprintf(stderr, "~~~~RETURN TYPE:%s\n", prim_type);
+			// Calculate postfix asterisks 
+			int i;
+			for (i=0; brackets[i]; brackets[i]=='[' ? i++ : *brackets++);
+			int this_many_ptrs = i;
+			char* ptrs = str_repeat("*", this_many_ptrs);
 			
-			// Append postfix asterisks 
-			int b_ptr_num = strlen(brackets)/BRACKETS_SIZE;
-			char* b_ptrs = str_repeat("*", b_ptr_num);
-			C_comp_type = concat(prim_type, b_ptrs);
+			// and append			
+			C_comp_type = concat(prim_type, ptrs);
+			
 		}
 		else	
 			C_comp_type = comp_type;
