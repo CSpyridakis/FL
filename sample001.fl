@@ -3,6 +3,14 @@
 *)
 
 program foo;
+
+var _: array of char;
+    __ : array of array of boolean;
+
+var ___ : array of array of array of char;
+
+function func1(a, b, c: array of char; d, f: real; klp, _klp: char): array of char;
+function func2(a, b, c, d, e: integer ; f, g: array of array of char): array[14] of array of array[1234][12] of array of real;
 var 
 	x,y,z: integer;
 	h: char;
@@ -10,10 +18,9 @@ var
 	something: char;
 	a: array[1] of integer;
 	kiallo_a, b: array[12][54] of array of array of char;
-	ambivalent_a, c: array of boolean;
-
-function func1(a, b, c: char; d, f: real; klp, _klp: char): array of char;
-function func2(a, b, c, d, e, f, g: integer): array of array of array of array of real;
+	ambivalent_a, c: array of boolean; 
+function nothing(): boolean;
+procedure _nothing();
 
 var d: boolean;
 

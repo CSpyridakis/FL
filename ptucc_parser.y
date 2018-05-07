@@ -84,9 +84,9 @@ program: program_decl declarations body '.'
 
 program_decl : KW_PROGRAM IDENT ';'  	{ $$ = $2; };
 
-declarations: %empty 		    { $$ = ""; }
-            | declarations var_decl { $$ = template("%s%s", $1, $2 ); }
-            | declarations subprogram_decl { $$ = template("%s%s", $1, $2 ); }
+declarations: var_decl 
+            | subprogram_decl 
+	    | declarations declarations { $$ = template("%s%s", $1, $2 ); }
 	    ;
 
 subprogram_decl: %empty 				{ $$ = ""; }
@@ -99,8 +99,10 @@ param_list: %empty 						{ $$ = "";}
           | param_list ';' param_list 				{ $$ = template("%s, %s", $1, $3);  };
 	  | var_list ':' compound_type 				{ $$ = make_C_params(make_C_comp_type($3), $1); }
 
-var_decl: KW_VAR var_assign { $$ = $2;}
-        ;
+var_decl: %empty 						{ $$ = "";}
+          | var_decl ';' var_decl  { $$ = template("%s;\n%s", $1, $3 ); }
+	  | KW_VAR var_assign { $$ = $2;}
+          ;
 
 var_assign: %empty 		      { $$ = ""; }
 	  | var_assign ';' var_assign { $$ = template("%s;\n%s", $1, $3); }
