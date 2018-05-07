@@ -92,12 +92,14 @@ declarations: var_decl
 subprogram_decl: %empty 				{ $$ = ""; }
        | subprogram_decl ';' subprogram_decl 		{ $$ = template("%s;\n%s", $1, $3 ); }
        | KW_PROC IDENT '(' param_list ')'		{ $$ = template("void %s(%s)", $2, $4 ); }
-       | KW_FUNC IDENT '(' param_list ')' ':' compound_type  { $$ = template("%s %s(%s)", make_C_comp_type($7), $2, $4 ); }
+       | KW_FUNC IDENT '(' param_list ')' ':' compound_type  {  char* C_comp_type = make_C_comp_type($7);
+								$$ = template("%s %s(%s)", C_comp_type , $2, $4 ); }
        ;
 
 param_list: %empty 						{ $$ = "";}
           | param_list ';' param_list 				{ $$ = template("%s, %s", $1, $3);  };
-	  | var_list ':' compound_type 				{ $$ = make_C_params(make_C_comp_type($3), $1); }
+	  | var_list ':' compound_type 				{ char* C_comp_type = make_C_comp_type($3);
+								  $$ = make_C_params(C_comp_type, $1); }
 
 var_decl: %empty 						{ $$ = "";}
           | var_decl ';' var_decl  { $$ = template("%s;\n%s", $1, $3 ); }

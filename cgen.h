@@ -1,8 +1,6 @@
 #ifndef CGEN_H
 #define CGEN_H
 
-#define BRACKETS_SIZE 3
-
 /*
 	String streams are handy for using standard C-library
 	functions to produce formatted strings.
