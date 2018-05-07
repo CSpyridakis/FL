@@ -17,7 +17,9 @@ function func2(a, b, c, d, e, f, g: integer): array of array of array of array o
 
 var d: boolean;
 
-procedure some_proc(uu: integer; ii, oo: boolean);
+procedure some_proc(uu: array of array of
+integer; ii, oo: array of boolean);
+
 begin
 	writeString('Hello world');
 	writeString('\n')

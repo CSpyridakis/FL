@@ -177,10 +177,10 @@ char* make_C_decl(char* comp_type, char* var_list){
 	}else 
 		result = template("%s %s", ptr_type, var_list);
 
-  	return concat(result,";\n");
+  	return result;
 }
 
-char* make_C_param_list(char* type, char* var_list){
+char* make_C_params(char* type, char* var_list){
 	char* result = NULL; 
 	
 	// Get first var
@@ -215,7 +215,7 @@ char* make_C_param_list(char* type, char* var_list){
 	
 }
 
-char* make_C_return_type(char* comp_type){
+char* make_C_comp_type(char* comp_type){
 	char* last_asterisk = strrchr(comp_type, '*');
 	char* asterisks = NULL;
 	char* prim_type = NULL;
@@ -238,11 +238,12 @@ char* make_C_return_type(char* comp_type){
 
 	}else
 		prim_type = comp_type;
-
+	
+	fprintf(stderr, "@@@@PRIM_TYPE:%s", prim_type);
 	return prim_type;
 }
 
-char* make_C_parsable_comp_type(char* comp_type, char* bracket_list){
+char* make_parsable_comp_type(char* comp_type, char* bracket_list){
 	char* result = NULL;
 	int br_l_empty = !strcmp(bracket_list, "");
 	if(br_l_empty) result = concat("*", comp_type);
