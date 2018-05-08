@@ -64,7 +64,7 @@ extern int line_num;
 %start program
 
 %type <crepr> program_decl d decl type_decl init_type_decl type_assign type_type_assign body statements statement_list param_list 
-%type <crepr> func_decl proc_decl func_def proc_def def subprogram_def subprogram_decl
+%type <crepr> func_decl proc_decl func_def proc_def def subprogram_def subprogram_decl prim_type
 %type <crepr> de decl_kind statement var_decl var_type_assign proc_call arguments bracket_list init_var_decl param_specifier
 %type <crepr> type arglist var_list expression compound_type var_assign brackets
 
@@ -119,16 +119,17 @@ type_decl: init_type_decl { $$ = template("%s",$1); }
          | type_decl init_type_decl { $$ = template("%s",$1); }
          ;	
 
-init_type_decl: "type" type_assign { $$ = template("%s", $2); } 
+init_type_decl: KW_TYPE type_assign { $$ = template("%s", $2); } 
 	      ; 
 
 type_assign: type_type_assign { $$ = template("%s", $1); }
 	   | type_assign type_type_assign { $$ = template("%s%s", $1, $2 ); }
 	   ;
 
-type_type_assign: IDENT '=' compound_type //{ set_typedef($1);
-					  //  char* C_typedef = make_C_typedef($3, $1);
-					  //  $$ = template("%s", C_typedef); } 
+type_type_assign: IDENT '=' compound_type ';' 	//{ if(set_typedef($1, $3))
+												//  	$$ = template("typedef %s %s\n", $3, $1);
+												//  else
+												//  	yyerror("Typedef Error!\n"); } 
 		;
 
 var_decl: init_var_decl { $$ = template("%s",$1); }
@@ -177,12 +178,15 @@ var_list: IDENT
         ; 
 
 compound_type: type { $$ = template("%s", $1); }
-	     | KW_ARRAY bracket_list KW_OF compound_type { $$ = make_parsable_comp_type($4, $2); }
-	     | subprogram_decl { $$ = template("%s", $1); }
-	  // | IDENT {char* type_def = get_typedef($1);
-	  //	      if(type_def) ... ;
-	  //	      else yyerror(); }
-	     ;
+	     	 | subprogram_decl { $$ = template("%s", $1); }
+	     	 | KW_ARRAY bracket_list KW_OF compound_type { $$ = make_parsable_comp_type($4, $2); }
+	  	     ;
+
+type: prim_type { $$ = template("%s", $1); }
+	| IDENT //{char* type_def = get_typedef($1);
+		    //  if(type_def) ... ;
+		    //  else yyerror(); }
+	;
 
 bracket_list: brackets { $$ = template("%s", $1); }
             | bracket_list brackets { $$ = template("%s%s", $1, $2); }
@@ -192,7 +196,7 @@ brackets: %empty  	 { $$ = ""; }
 	| '[' POSINT ']' { $$ = template("[%s]", $2); }
 	;
 
-type: KW_CHAR { $$ = template("%s", "char"); }
+prim_type: KW_CHAR { $$ = template("%s", "char"); }
     | KW_INT  { $$ = template("%s", "int"); }
     | KW_REAL { $$ = template("%s", "double"); }
     | KW_BOOLEAN { $$ = template("%s", "int"); }
