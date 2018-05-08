@@ -198,7 +198,7 @@ type: KW_CHAR { $$ = template("%s", "char"); }
     | KW_BOOLEAN { $$ = template("%s", "int"); }
     ;
 
-body : KW_BEGIN statements KW_END   	{ $$ = template("{\n %s \n }\n", $2); };
+body : KW_BEGIN statements KW_END   	{ $$ = template("{\n %s \n}\n", $2); };
 
 statements: %empty				        	{ $$ = ""; };
 statements: statement_list		   		{ $$ = $1; };
