@@ -314,15 +314,17 @@ int typedef_table_size = MAXTYPEDEF;
 
 int set_typedef(char* name, char* def)
 {
-	/* Check to see if macro already defined, and redefine it. */
+	/* Check to see if typedef already defined */
 	int i;
 	for(i=0; i<typedef_table_size; i++) {
 		if(strcmp(typedef_table[i][0], name)==0) {
 			/* found ! */
-			free(name);
-			free(typedef_table[i][1]);
-			typedef_table[i][1] = def;
-			break;
+			fprintf(stderr, "Typedef already defined...\n");
+			return 0;
+			// free(name);
+			// free(typedef_table[i][1]);
+			// typedef_table[i][1] = def;
+			// break;
 		}
 	}
 	if(i<typedef_table_size)
