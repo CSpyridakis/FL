@@ -58,7 +58,7 @@ char* concat(const char *s1, const char *s2);
 char* str_repeat(const char * s, int n);
 
 /* 
-	C-formatting functions 
+	C-parsing functions 
 */ 
 char* make_C_decl(char* comp_type, char* var_list);
 char* make_C_params(char* type, char* var_list);
