@@ -48,6 +48,7 @@ extern int line_num;
 %token <crepr> KW_DOWNTO
 %token <crepr> KW_TRUE
 %token <crepr> KW_FALSE
+%token <crepr> KW_TYPE
 %token <crepr> OP_EQ
 %token <crepr> OP_INEQ
 %token <crepr> OP_LT
