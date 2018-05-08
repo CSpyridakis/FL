@@ -70,6 +70,10 @@ char* make_C_comp_type(char* comp_type);
 */ 
 char* make_parsable_comp_type(char* comp_type, char* bracket_list);
 
-
+/* 
+	Typedef getters-setters
+*/
+int set_typedef(char* name, char* def);
+char* get_typedef(char* name);
 
 #endif
