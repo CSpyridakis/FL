@@ -123,17 +123,18 @@ init_type_decl: KW_TYPE type_assign { $$ = template("%s", $2); }
 	      ; 
 
 type_assign: type_type_assign { $$ = template("%s", $1); }
-	   | type_assign type_type_assign { $$ = template("%s%s", $1, $2 ); }
-	   ;
+	   	   | type_assign type_type_assign { $$ = template("%s%s", $1, $2 ); }
+	       ;
 
-type_type_assign: IDENT '=' compound_type ';' 	//{ if(set_typedef($1, $3))
+type_type_assign: IDENT '=' compound_type ';' 	// { 
+												//  if(set_typedef($1, $3))
 												//  	$$ = template("typedef %s %s\n", $3, $1);
 												//  else
 												//  	yyerror("Typedef Error!\n"); } 
 		;
 
 var_decl: init_var_decl { $$ = template("%s",$1); }
-	| var_decl init_var_decl { $$ = template("%s%s", $1, $2 ); }
+		| var_decl init_var_decl { $$ = template("%s%s", $1, $2 ); }
         ;
 
 init_var_decl: KW_VAR var_assign { $$ = template("%s", $2);} 
@@ -179,13 +180,15 @@ var_list: IDENT
 
 compound_type: type { $$ = template("%s", $1); }
 	     	 | subprogram_decl { $$ = template("%s", $1); }
-	     	 | KW_ARRAY bracket_list KW_OF compound_type { $$ = make_parsable_comp_type($4, $2); }
+	     	 | KW_ARRAY bracket_list KW_OF compound_type {  
+	     	 											   $$ = make_parsable_comp_type($4, $2); }
 	  	     ;
 
-type: prim_type { $$ = template("%s", $1); }
-	| IDENT //{char* type_def = get_typedef($1);
-		    //  if(type_def) ... ;
-		    //  else yyerror(); }
+type: prim_type {  $$ = template("%s", $1); }
+	| IDENT //   { 
+			//	char* type_def = get_typedef($1);
+		    //  if(type_def) $$ = template("%s", $1);
+		    //   else yyerror("Error! Typedef does not exist..."); }
 	;
 
 bracket_list: brackets { $$ = template("%s", $1); }
