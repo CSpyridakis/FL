@@ -26,43 +26,44 @@ extern int line_num;
 %token <crepr> KW_INT
 %token <crepr> KW_VAR
 
-%token KW_PROGRAM 
-%token KW_BEGIN 
-%token KW_END
-%token KW_FUNC
-%token KW_PROC
-%token KW_RESULT
+%token <crepr> KW_PROGRAM 
+%token <crepr> KW_BEGIN 
+%token <crepr> KW_END
+%token <crepr> KW_FUNC
+%token <crepr> KW_PROC
+%token <crepr> KW_RESULT
 %token <crepr> KW_ARRAY
-%token KW_DO
-%token KW_GOTO
-%token KW_RETURN
-%token KW_ELSE
-%token KW_IF;
+%token <crepr> KW_DO
+%token <crepr> KW_GOTO
+%token <crepr> KW_RETURN
+%token <crepr> KW_ELSE
+%token <crepr> KW_IF;
 %token <crepr> KW_OF
-%token KW_THEN
-%token KW_FOR
-%token KW_REPEAT
-%token KW_UNTIL
-%token KW_WHILE
-%token KW_TO
-%token KW_DOWNTO
-%token KW_TRUE
-%token KW_FALSE
-%token OP_EQ
-%token OP_INEQ
-%token OP_LT
-%token OP_LTE
-%token OP_GT
-%token OP_GTE
-%token OP_AND
-%token OP_OR
-%token OP_NOT
-%token OP_ASSIGN
-%token OP_CAST
+%token <crepr> KW_THEN
+%token <crepr> KW_FOR
+%token <crepr> KW_REPEAT
+%token <crepr> KW_UNTIL
+%token <crepr> KW_WHILE
+%token <crepr> KW_TO
+%token <crepr> KW_DOWNTO
+%token <crepr> KW_TRUE
+%token <crepr> KW_FALSE
+%token <crepr> OP_EQ
+%token <crepr> OP_INEQ
+%token <crepr> OP_LT
+%token <crepr> OP_LTE
+%token <crepr> OP_GT
+%token <crepr> OP_GTE
+%token <crepr> OP_AND
+%token <crepr> OP_OR
+%token <crepr> OP_NOT
+%token <crepr> OP_ASSIGN
+%token <crepr> OP_CAST
 
 %start program
 
-%type <crepr> program_decl d decl type_decl body statements statement_list param_list func_decl proc_decl
+%type <crepr> program_decl d decl type_decl init_type_decl type_assign type_type_assign body statements statement_list param_list 
+%type <crepr> func_decl proc_decl
 %type <crepr> de decl_kind statement var_decl var_type_assign proc_call arguments bracket_list init_var_decl param_specifier
 %type <crepr> type arglist var_list expression compound_type subprogram_decl var_assign subprogram_decl_kind brackets
 
@@ -103,19 +104,38 @@ decl: decl_kind  { $$ = template("%s",$1); }
 
 decl_kind: var_decl 	   { $$ = template("%s",$1); }
          | subprogram_decl { $$ = template("%s",$1); }
+	 | type_decl { $$ = template("%s",$1); }
 	 ;
+
+type_decl: init_type_decl { $$ = template("%s",$1); }
+         | type_decl init_type_decl { $$ = template("%s",$1); }
+         ;	
+
+init_type_decl: "type" type_assign { $$ = template("%s", $2); } 
+	      ; 
+
+type_assign: type_type_assign { $$ = template("%s", $1); }
+	   | type_assign type_type_assign { $$ = template("%s%s", $1, $2 ); }
+	   ;
+
+type_type_assign: IDENT '=' compound_type //{ set_typedef($1);
+					  //  char* C_typedef = make_C_typedef($3, $1);
+					  //  $$ = template("%s", C_typedef); } 
+		;
 
 var_decl: init_var_decl { $$ = template("%s",$1); }
 	| var_decl init_var_decl { $$ = template("%s%s", $1, $2 ); }
         ;
 
-init_var_decl: KW_VAR var_assign {  fprintf(stderr, "var_assign:%s\n", $2); $$ = template("%s", $2);} 
+init_var_decl: KW_VAR var_assign { $$ = template("%s", $2);} 
 	     ;
 
-var_assign: var_type_assign { fprintf(stderr, "@@@@@@@@@\n");$$ = template("%s", $1); }
+var_assign: var_type_assign { $$ = template("%s", $1); }
 	  | var_assign var_type_assign { $$ = template("%s%s", $1, $2 ); }
 	  ; 
-var_type_assign: var_list ':' compound_type ';'  { $$ = template("%s;\n", make_C_decl($3, $1)); }
+
+var_type_assign: var_list ':' compound_type ';'  { char* C_decl = make_C_decl($3, $1);
+						   $$ = template("%s;\n", C_decl); }
 	       ; 
 
 subprogram_decl: subprogram_decl_kind { $$ = template("%s",$1); }
@@ -124,7 +144,6 @@ subprogram_decl: subprogram_decl_kind { $$ = template("%s",$1); }
 
 subprogram_decl_kind: func_decl { $$ = template("%s",$1); }
 	       	    | proc_decl { $$ = template("%s",$1); }
-		    | type_decl { $$ = template("%s",$1); }
                     ;
 
 func_decl: KW_FUNC IDENT '(' param_list ')' ':' compound_type ';' 	{ char* C_comp_type = make_C_comp_type($7);
@@ -133,8 +152,6 @@ func_decl: KW_FUNC IDENT '(' param_list ')' ':' compound_type ';' 	{ char* C_com
 
 proc_decl: KW_PROC IDENT '(' param_list ')' ';' { $$ = template("void %s(%s);\n", $2, $4 ); }
          ;
-
-type_decl: ;	
 
 param_list: param_specifier	 	{ $$ = template("%s",$1); }
           | param_list param_specifier	{ $$ = template("%s%s", $1, $2);  };
@@ -155,9 +172,12 @@ var_list: IDENT
         | var_list ',' IDENT { $$ = template("%s, %s", $1, $3); }
         ; 
 
-compound_type: type
+compound_type: type { $$ = template("%s", $1); }
 	     | KW_ARRAY bracket_list KW_OF compound_type { $$ = make_parsable_comp_type($4, $2); }
-             ;
+	  // | IDENT {char* type_def = get_typedef($1);
+	  //	      if(type_def) ... ;
+	  //	      else yyerror(); }
+	     ;
 
 bracket_list: brackets { $$ = template("%s", $1); }
             | bracket_list brackets { $$ = template("%s%s", $1, $2); }
