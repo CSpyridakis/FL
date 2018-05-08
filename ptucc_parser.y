@@ -62,9 +62,9 @@ extern int line_num;
 
 %start program
 
-%type <crepr> program_decl d decl def type_def subprogram_def body statements statement_list param_list func_decl proc_decl
-%type <crepr> de decl_kind statement var_decl var_type_assign proc_call arguments bracket_list init_var_decl
-%type <crepr> type arglist var_list expression compound_type subprogram_decl var_assign subprogram_decl_kind
+%type <crepr> program_decl d decl type_decl body statements statement_list param_list func_decl proc_decl
+%type <crepr> de decl_kind statement var_decl var_type_assign proc_call arguments bracket_list init_var_decl param_specifier
+%type <crepr> type arglist var_list expression compound_type subprogram_decl var_assign subprogram_decl_kind brackets
 
 %%
 
@@ -89,16 +89,13 @@ d: de   { $$ = template("%s",$1); }
  ;
 
 de: decl  { $$ = template("%s",$1); }
-  | def   { $$ = template("%s",$1); } 
+  // | def   { $$ = template("%s",$1); } 
   ;  
 
-def: %empty	 { $$ = ""; }
-   | def type_def { $$ = template("%s%s", $1, $2 ); }
-   | def subprogram_def { $$ = template("%s%s", $1, $2 ); }
-   ;
+// def: subprogram_def	{ $$ = template("%s",$1); }
+   // ;
 
-type_def: ;
-subprogram_def: ;
+// subprogram_def: ;
 
 decl: decl_kind  { $$ = template("%s",$1); }
     | decl decl_kind { $$ = template("%s%s", $1, $2 ); }
@@ -127,6 +124,7 @@ subprogram_decl: subprogram_decl_kind { $$ = template("%s",$1); }
 
 subprogram_decl_kind: func_decl { $$ = template("%s",$1); }
 	       	    | proc_decl { $$ = template("%s",$1); }
+		    | type_decl { $$ = template("%s",$1); }
                     ;
 
 func_decl: KW_FUNC IDENT '(' param_list ')' ':' compound_type ';' 	{ char* C_comp_type = make_C_comp_type($7);
@@ -135,13 +133,23 @@ func_decl: KW_FUNC IDENT '(' param_list ')' ':' compound_type ';' 	{ char* C_com
 
 proc_decl: KW_PROC IDENT '(' param_list ')' ';' { $$ = template("void %s(%s);\n", $2, $4 ); }
          ;
-	
 
-param_list: %empty 						{ $$ = "";}
-          | param_list ';' param_list 				{ $$ = template("%s, %s", $1, $3);  };
-	  | var_list ':' compound_type 				{ char* C_comp_type = make_C_comp_type($3);
-								  $$ = make_C_params(C_comp_type, $1); }
+type_decl: ;	
+
+param_list: param_specifier	 	{ $$ = template("%s",$1); }
+          | param_list param_specifier	{ $$ = template("%s%s", $1, $2);  };
+	  
 	  ;
+
+param_specifier: %empty 			{ $$ = "";}
+	       | var_list ':' compound_type     { char* C_comp_type = make_C_comp_type($3);
+					          char* C_params = make_C_params(C_comp_type, $1);
+						  $$ = template("%s", C_params); }
+	
+	       | var_list ':' compound_type ';' { char* C_comp_type = make_C_comp_type($3);
+					          char* C_params = make_C_params(C_comp_type, $1);
+						  $$ = template("%s, ", C_params); }
+	       ; 
 
 var_list: IDENT
         | var_list ',' IDENT { $$ = template("%s, %s", $1, $3); }
@@ -151,9 +159,13 @@ compound_type: type
 	     | KW_ARRAY bracket_list KW_OF compound_type { $$ = make_parsable_comp_type($4, $2); }
              ;
 
-bracket_list: %empty			  { $$ = ""; };
-            | bracket_list '[' POSINT ']' { $$ = template("%s[%s]", $1, $3); }
+bracket_list: brackets { $$ = template("%s", $1); }
+            | bracket_list brackets { $$ = template("%s%s", $1, $2); }
             ; 
+
+brackets: %empty  	 { $$ = ""; }
+	| '[' POSINT ']' { $$ = template("[%s]", $2); }
+	;
 
 type: KW_CHAR { $$ = template("%s", "char"); }
     | KW_INT  { $$ = template("%s", "int"); }
