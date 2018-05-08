@@ -62,9 +62,9 @@ extern int line_num;
 
 %start program
 
-%type <crepr> program_decl d decl def type_def subprogram_def body statements statement_list param_list
-%type <crepr> statement var_decl var_type_assign proc_call arguments bracket_list
-%type <crepr> type arglist var_list expression compound_type subprogram_decl
+%type <crepr> program_decl d decl def type_def subprogram_def body statements statement_list param_list func_decl proc_decl
+%type <crepr> de decl_kind statement var_decl var_type_assign proc_call arguments bracket_list init_var_decl
+%type <crepr> type arglist var_list expression compound_type subprogram_decl var_assign subprogram_decl_kind
 
 %%
 
@@ -84,45 +84,64 @@ program: program_decl d body '.'
 
 program_decl : KW_PROGRAM IDENT ';'  	{ $$ = $2; };
 
-d: decl
- | def
- | d d { $$ = template("%s%s", $1, $2 ); }
+d: de   { $$ = template("%s",$1); }
+ | d de { $$ = template("%s%s", $1, $2 ); }
+ ;
 
-def: type_def
-   | subprogram_def
-   | def def { $$ = template("%s%s", $1, $2 ); }
+de: decl  { $$ = template("%s",$1); }
+  | def   { $$ = template("%s",$1); } 
+  ;  
+
+def: %empty	 { $$ = ""; }
+   | def type_def { $$ = template("%s%s", $1, $2 ); }
+   | def subprogram_def { $$ = template("%s%s", $1, $2 ); }
    ;
 
 type_def: ;
 subprogram_def: ;
 
-decl: var_decl 
-    | subprogram_decl 
-    | decl decl { $$ = template("%s%s", $1, $2 ); }
+decl: decl_kind  { $$ = template("%s",$1); }
+    | decl decl_kind { $$ = template("%s%s", $1, $2 ); }
     ;
 
-subprogram_decl: %empty 						{ $$ = ""; }
-	       | subprogram_decl ';' subprogram_decl 			{ $$ = template("%s;\n%s", $1, $3 ); }
-	       | KW_PROC IDENT '(' param_list ')'			{ $$ = template("void %s(%s)", $2, $4 ); }
-       	       | KW_FUNC IDENT '(' param_list ')' ':' compound_type  	{ char* C_comp_type = make_C_comp_type($7);
-							       	 	  $$ = template("%s %s(%s)", C_comp_type , $2, $4 ); }
+decl_kind: var_decl 	   { $$ = template("%s",$1); }
+         | subprogram_decl { $$ = template("%s",$1); }
+	 ;
+
+var_decl: init_var_decl { $$ = template("%s",$1); }
+	| var_decl init_var_decl { $$ = template("%s%s", $1, $2 ); }
+        ;
+
+init_var_decl: KW_VAR var_assign {  fprintf(stderr, "var_assign:%s\n", $2); $$ = template("%s", $2);} 
+	     ;
+
+var_assign: var_type_assign { fprintf(stderr, "@@@@@@@@@\n");$$ = template("%s", $1); }
+	  | var_assign var_type_assign { $$ = template("%s%s", $1, $2 ); }
+	  ; 
+var_type_assign: var_list ':' compound_type ';'  { $$ = template("%s;\n", make_C_decl($3, $1)); }
+	       ; 
+
+subprogram_decl: subprogram_decl_kind { $$ = template("%s",$1); }
+	       | subprogram_decl subprogram_decl_kind { $$ = template("%s%s", $1, $2 ); }
 	       ;
+
+subprogram_decl_kind: func_decl { $$ = template("%s",$1); }
+	       	    | proc_decl { $$ = template("%s",$1); }
+                    ;
+
+func_decl: KW_FUNC IDENT '(' param_list ')' ':' compound_type ';' 	{ char* C_comp_type = make_C_comp_type($7);
+							       	          $$ = template("%s %s(%s);\n", C_comp_type , $2, $4 ); }
+	 ;
+
+proc_decl: KW_PROC IDENT '(' param_list ')' ';' { $$ = template("void %s(%s);\n", $2, $4 ); }
+         ;
+	
 
 param_list: %empty 						{ $$ = "";}
           | param_list ';' param_list 				{ $$ = template("%s, %s", $1, $3);  };
 	  | var_list ':' compound_type 				{ char* C_comp_type = make_C_comp_type($3);
 								  $$ = make_C_params(C_comp_type, $1); }
 	  ;
-
-var_decl: %empty 						{ $$ = "";}
-          | var_decl ';' var_decl  { $$ = template("%s;\n%s", $1, $3 ); }
-	  | KW_VAR var_type_assign { $$ = $2;}
-          ;
-
-var_type_assign: %empty 		             { $$ = ""; }
-	       | var_type_assign ';' var_type_assign { $$ = template("%s;\n%s", $1, $3); }
-	       | var_list ':' compound_type          { $$ = make_C_decl($3, $1); }
-	       ;
 
 var_list: IDENT
         | var_list ',' IDENT { $$ = template("%s, %s", $1, $3); }
