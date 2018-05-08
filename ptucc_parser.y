@@ -63,7 +63,7 @@ extern int line_num;
 %start program
 
 %type <crepr> program_decl d decl type_decl init_type_decl type_assign type_type_assign body statements statement_list param_list 
-%type <crepr> func_decl proc_decl
+%type <crepr> func_decl proc_decl func_def proc_def def subprogram_def
 %type <crepr> de decl_kind statement var_decl var_type_assign proc_call arguments bracket_list init_var_decl param_specifier
 %type <crepr> type arglist var_list expression compound_type subprogram_decl var_assign subprogram_decl_kind brackets
 
@@ -85,18 +85,26 @@ program: program_decl d body '.'
 
 program_decl : KW_PROGRAM IDENT ';'  	{ $$ = $2; };
 
-d: de   { $$ = template("%s",$1); }
+d: de   { $$ = template("%s", $1); }
  | d de { $$ = template("%s%s", $1, $2 ); }
  ;
 
-de: decl  { $$ = template("%s",$1); }
-  // | def   { $$ = template("%s",$1); } 
+de: decl  { $$ = template("%s", $1); }
+  | def   { $$ = template("%s", $1); } 
   ;  
 
-// def: subprogram_def	{ $$ = template("%s",$1); }
-   // ;
+def: subprogram_def	{ $$ = template("%s", $1); }
+   ;
 
-// subprogram_def: ;
+subprogram_def: func_def { $$ = template("%s", $1); }
+	      | proc_def { $$ = template("%s", $1); }
+	      ;
+
+func_def: func_decl body ';' // { ... }
+	;
+
+proc_def: proc_decl body ';' // { ... }
+	;
 
 decl: decl_kind  { $$ = template("%s",$1); }
     | decl decl_kind { $$ = template("%s%s", $1, $2 ); }
