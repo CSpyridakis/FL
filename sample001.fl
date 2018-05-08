@@ -10,7 +10,11 @@ var _: array of char;
 var ___ : array of array of array of char;
 
 function func1(a, b, c: array[1][2][3] of char; d, f: real; klp, _klp: char): array of array[4] of char;
+begin end; 
+
 function func2(a, b, c, d, e: integer ; f, g: array[1][65] of array[1][213123][1][33][4] of char): array[14] of array of array[1234][12][99][5][123123] of array of real;
+begin end;
+
 var 
 	x,y,z: integer;
 	h: char;
@@ -19,13 +23,18 @@ var
 	a: array[1] of integer;
 	kiallo_a, b: array[12][54] of array of array of char;
 	ambivalent_a, c: array of boolean; 
+
 function nothing(): boolean;
+begin end;
+
 procedure _nothing();
+begin end;
 
 var d: boolean;
 
-procedure some_proc(uu: array of array of
+procedure some_proc(uu: array of array of 
 integer; ii, oo: array of boolean);
+begin end;
 
 begin
 	writeString('Hello world');
