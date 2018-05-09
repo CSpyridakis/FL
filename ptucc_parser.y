@@ -123,14 +123,16 @@ init_type_decl: KW_TYPE type_assign { $$ = template("%s", $2); }
 	      ; 
 
 type_assign: type_type_assign { $$ = template("%s", $1); }
-	   	   | type_assign type_type_assign { $$ = template("%s%s", $1, $2 ); }
-	       ;
+	   | type_assign type_type_assign { $$ = template("%s%s", $1, $2 ); }
+	   ;
 
-type_type_assign: IDENT '=' compound_type ';' 	// { 
-												//  if(set_typedef($1, $3))
-												//  	$$ = template("typedef %s %s\n", $3, $1);
-												//  else
-												//  	yyerror("Typedef Error!\n"); } 
+type_type_assign: IDENT OP_EQ compound_type ';'		{ char* C_ct = make_C_comp_type($3);
+							  if(set_typedef($1, C_ct)){
+								fprintf(stderr, "-------------- HERE--------------\ncomp_type:%s\n", $3);		
+ 							  	$$ = template("typedef %s %s;\n", C_ct, $1);
+							  }else{
+							  	yyerror("Typedef Error!\n");
+							  } } 
 		;
 
 var_decl: init_var_decl { $$ = template("%s",$1); }
@@ -152,8 +154,8 @@ subprogram_decl: func_decl { $$ = template("%s", $1); }
 	       | proc_decl { $$ = template("%s", $1); }
 	       ; 
 
-func_decl: KW_FUNC IDENT '(' param_list ')' ':' compound_type 	{ char* C_comp_type = make_C_comp_type($7);
-							       	          $$ = template("%s %s(%s)", C_comp_type , $2, $4 ); }
+func_decl: KW_FUNC IDENT '(' param_list ')' ':' compound_type 	{ char* C_ct = make_C_comp_type($7);
+							       	  $$ = template("%s %s(%s)", C_ct , $2, $4 ); }
 	 ;
 
 proc_decl: KW_PROC IDENT '(' param_list ')'  { $$ = template("void %s(%s)", $2, $4 ); }
@@ -165,12 +167,12 @@ param_list: param_specifier	 	{ $$ = template("%s",$1); }
 	  ;
 
 param_specifier: %empty 			{ $$ = "";}
-	       | var_list ':' compound_type     { char* C_comp_type = make_C_comp_type($3);
-					          char* C_params = make_C_params(C_comp_type, $1);
+	       | var_list ':' compound_type     { char* C_ct = make_C_comp_type($3);
+					          char* C_params = make_C_params(C_ct, $1);
 						  $$ = template("%s", C_params); }
 	
-	       | var_list ':' compound_type ';' { char* C_comp_type = make_C_comp_type($3);
-					          char* C_params = make_C_params(C_comp_type, $1);
+	       | var_list ':' compound_type ';' { char* C_ct = make_C_comp_type($3);
+					          char* C_params = make_C_params(C_ct, $1);
 						  $$ = template("%s, ", C_params); }
 	       ; 
 
@@ -180,15 +182,15 @@ var_list: IDENT
 
 compound_type: type { $$ = template("%s", $1); }
 	     	 | subprogram_decl { $$ = template("%s", $1); }
-	     	 | KW_ARRAY bracket_list KW_OF compound_type {  
-	     	 											   $$ = make_parsable_comp_type($4, $2); }
-	  	     ;
+	     	 | KW_ARRAY bracket_list KW_OF compound_type { $$ = make_parsable_comp_type($4, $2); }
+	  	 ;
 
 type: prim_type {  $$ = template("%s", $1); }
-	| IDENT //   { 
-			//	char* type_def = get_typedef($1);
-		    //  if(type_def) $$ = template("%s", $1);
-		    //   else yyerror("Error! Typedef does not exist..."); }
+	| IDENT { char* type_def = get_typedef($1);
+		  if(type_def) 
+		  	$$ = template("%s", $1);
+		  else 
+		  	yyerror("Error! Typedef does not exist..."); }
 	;
 
 bracket_list: brackets { $$ = template("%s", $1); }
@@ -207,7 +209,7 @@ prim_type: KW_CHAR { $$ = template("%s", "char"); }
 
 body : KW_BEGIN statements KW_END   	{ $$ = template("{\n %s \n}\n", $2); };
 
-statements: %empty				        	{ $$ = ""; };
+statements: %empty				        { $$ = ""; };
 statements: statement_list		   		{ $$ = $1; };
 
 statement_list: statement                     

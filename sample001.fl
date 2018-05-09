@@ -6,6 +6,8 @@ program foo;
 
 (* type string = array of char; *)
 
+type string = array of array[12][13] of char;
+
 var _: array of char;
     __ : array of array of boolean;
 
