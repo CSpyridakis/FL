@@ -91,6 +91,7 @@ var { fprintf(stderr,  "token KEYWORD_VAR: %s\n", yytext); 			 return KW_VAR; }
 while { fprintf(stderr,  "token KEYWORD_WHILE: %s\n", yytext); 		 return KW_WHILE; } 
 to { fprintf(stderr,  "token KEYWORD_TO: %s\n", yytext); 			 return KW_TO; }
 downto { fprintf(stderr,  "token KEYWORD_DOWNTO: %s\n", yytext); 	 return KW_DOWNTO; }
+type { fprintf(stderr,  "token KEYWORD_TYPE: %s\n", yytext); 	 	 return KW_TYPE; }
 true  { fprintf(stderr,  "token KEYWORD_TRUE: %s\n", yytext); 		 return KW_TRUE; }
 false { fprintf(stderr,  "token KEYWORD_FALSE: %s\n", yytext); 		 return KW_FALSE; }
 

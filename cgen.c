@@ -101,7 +101,7 @@ char* str_repeat(const char * s, int n) {
 }
 
 /* 
-	C-formatting functions 
+	C-parsing functions 
 */ 
 
 char* make_C_decl(char* comp_type, char* var_list){
@@ -288,10 +288,64 @@ char* make_C_comp_type(char* comp_type){
 	return C_comp_type;
 }
 
+/* 
+	General parsing functions 
+*/
+
 char* make_parsable_comp_type(char* comp_type, char* bracket_list){
 	char* result = NULL;
 	int br_l_empty = !strcmp(bracket_list, "");
 	if(br_l_empty) result = concat("*", comp_type);
 	else result = concat(comp_type, bracket_list);
 	return result;
+}
+
+/* 
+	Typedef utilities
+*/
+
+#define MAXTYPEDEF 32
+char* typedef_table[MAXTYPEDEF][2];
+int typedef_table_size = MAXTYPEDEF;
+
+/* 
+	Typedef getters-setters
+*/
+
+int set_typedef(char* name, char* def)
+{
+	/* Check to see if typedef already defined */
+	int i;
+	for(i=0; i<typedef_table_size; i++) {
+		if(strcmp(typedef_table[i][0], name)==0) {
+			/* found ! */
+			fprintf(stderr, "Typedef already defined...\n");
+			return 0;
+			// free(name);
+			// free(typedef_table[i][1]);
+			// typedef_table[i][1] = def;
+			// break;
+		}
+	}
+	if(i<typedef_table_size)
+		return 1;
+	else if(typedef_table_size < MAXTYPEDEF) {
+		/* new entry */
+		assert(i==typedef_table_size);
+		typedef_table[i][0] = name;
+		typedef_table[i][1] = def;
+		typedef_table_size++;
+		return 1;
+	}
+	else
+		return 0;
+}
+
+char* get_typedef(char* name)
+{
+	for(int i=0;i<typedef_table_size; i++) {
+		if(strcmp(typedef_table[i][0], name)==0)
+			return typedef_table[i][1];
+	}
+	return NULL;
 }

@@ -4,6 +4,8 @@
 
 program foo;
 
+(* type string = array of char; *)
+
 var _: array of char;
     __ : array of array of boolean;
 
