@@ -8,7 +8,6 @@
 extern int line_num;
 int yyerror_count = 0;
 const char* c_prologue = "#include \"ptuclib.h\"\n""\n";
-const char comma[2] = ",";
 
 void ssopen(sstream* S)
 {
@@ -150,19 +149,19 @@ char* make_C_decl(char* comp_type, char* var_list){
 	if(brackets_part){
 
 		// Get first var
-		char* first_var = strtok(var_list, comma);
+		char* first_var = strtok(var_list, ",");
 		
 		/* If second var (next_var) is non-NULL 
 		then var_list is a comma-separated list */
-		char* next_var = strtok(NULL, comma);
-		if(!next_var) result = template("%s %s%s", ptr_type, var_list, brackets_part);
+		char* next_var = strtok(NULL, ",");
+		if(!next_var) 
+			result = concat(concat(concat(ptr_type, " "), var_list), brackets_part);
 		else{	
 
 			char* var_l_w_b_part = NULL;
 
-			char* comma_and_space = concat(comma, " ");
 			char* first_var_w_b = concat(concat(" ", first_var), brackets_part);
-			var_l_w_b_part = concat(first_var_w_b, comma_and_space);
+			var_l_w_b_part = concat(first_var_w_b, ", ");
 
 			// Init to " {first_var}{brackers_part}, {next_var}{brackets_part}"
 			var_l_w_b_part = concat(var_l_w_b_part, next_var);
@@ -173,46 +172,45 @@ char* make_C_decl(char* comp_type, char* var_list){
 			   and construct {next_var}{brackets_part} */
 			do{
 			  
-			  next_var = strtok(NULL, comma);
+			  next_var = strtok(NULL, ",");
 			  if(next_var){
-			  	  var_l_w_b_part = concat(var_l_w_b_part, comma_and_space);
+			  	  var_l_w_b_part = concat(var_l_w_b_part, ", ");
 				  var_l_w_b_part = concat(var_l_w_b_part, concat(next_var, brackets_part));
 			  }
 
 			}while(next_var);
-
-			result = template("%s %s", ptr_type, var_l_w_b_part);
+			
+			result = concat(concat(ptr_type, " "), var_l_w_b_part);
 		}
 	
-	}else 
-		result = template("%s %s", ptr_type, var_list);
+	}else	
+		result = concat(concat(ptr_type, " "), var_list);
 
   	return result;
 }
 
 char* make_C_params(char* type, char* var_list){
 	char* result = NULL; 
-	char* first_var = strtok(var_list, comma);                   
-	char* next_var = strtok(NULL, comma);
+	char* first_var = strtok(var_list, ",");                   
+	char* next_var = strtok(NULL, ",");
 
 	if(!next_var) 
-		return template("%s %s", type, var_list);
+		result = concat(concat(type, " "), var_list);
 	else{	
 		/* If next_var is non-NULL 
 		   then var_list is a comma-separated list */
 
 		// Init to "type first_var, type next_var"
 		char* type_and_space = concat(type, " ");
-		char* comma_and_space = concat(comma, " ");
-        	char* first_param = concat(concat(type_and_space, first_var), comma_and_space);
+        	char* first_param = concat(concat(type_and_space, first_var), ", ");
 		result = concat(first_param, concat(type_and_space, next_var));
 	   	
 	   	/* Walk through rest of var_list, fetch other vars 
 	           and construct C param list */
 		do{
-		  next_var = strtok(NULL, comma);
+		  next_var = strtok(NULL, ",");
 		  if(next_var){
-			  result = concat(result, comma_and_space);
+			  result = concat(result, ", ");
 			  result = concat(result, concat(type_and_space, next_var));
 		  }
 		}while(next_var);
@@ -268,7 +266,6 @@ char* make_C_comp_type(char* comp_type){
 			// Get primitive type part
 			memcpy( prim_type, comp_type, brackets - comp_type);
 			prim_type[sizeof(prim_type) - 1] = '\0';
-			fprintf(stderr, "~~~~RETURN TYPE:%s\n", prim_type);
 
 			// Calculate postfix asterisks 
 			int i;
@@ -305,36 +302,43 @@ char* make_parsable_comp_type(char* comp_type, char* bracket_list){
 */
 
 #define MAXTYPEDEF 32
-char* typedef_table[MAXTYPEDEF][2];
-int typedef_table_size = MAXTYPEDEF;
+char* typedef_table[MAXTYPEDEF][2]; 
+int typedef_table_size = MAXTYPEDEF-1;
 
 /* 
 	Typedef getters-setters
 */
 
 int set_typedef(char* name, char* def)
-{
+{	
 	/* Check to see if typedef already defined */
 	int i;
+	
 	for(i=0; i<typedef_table_size; i++) {
-		if(strcmp(typedef_table[i][0], name)==0) {
-			/* found ! */
-			fprintf(stderr, "Typedef already defined...\n");
-			return 0;
-			// free(name);
-			// free(typedef_table[i][1]);
-			// typedef_table[i][1] = def;
-			// break;
+		char* table_entry = typedef_table[i][0];		
+		if(table_entry){
+			if(!strcmp(table_entry, name)) {
+				/* found ! */
+				fprintf(stderr, "Typedef already defined...\n");
+				return 0;
+				// free(name);
+				// free(typedef_table[i][1]);
+				// typedef_table[i][1] = def;
+				// break;
+			}
 		}
+	
 	}
 	if(i<typedef_table_size)
 		return 1;
 	else if(typedef_table_size < MAXTYPEDEF) {
 		/* new entry */
+		
 		assert(i==typedef_table_size);
 		typedef_table[i][0] = name;
 		typedef_table[i][1] = def;
 		typedef_table_size++;
+		 
 		return 1;
 	}
 	else
