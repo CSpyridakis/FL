@@ -5,6 +5,8 @@
 #include <stdarg.h>
 #include "cgen.h"
 
+#define MAX_TYPE_LEN 32
+
 extern int line_num;
 int yyerror_count = 0;
 const char* c_prologue = "#include \"ptuclib.h\"\n""\n";
@@ -111,7 +113,7 @@ char* make_C_decl(char* comp_type, char* var_list){
 	char* asterisks = NULL;
 	char* brackets_part = NULL;
 	// Allocate str with size: max len of our primitive types and set to 0	
-	char* prim_type = (char*) calloc(strlen("double") + 1, sizeof(char));
+	char* prim_type = (char*)calloc(MAX_TYPE_LEN, sizeof(char));
 
 	if(last_asterisk){ 
 		// Get asterisks part
@@ -128,14 +130,18 @@ char* make_C_decl(char* comp_type, char* var_list){
 	if(brackets_part!=NULL && asterisks!=NULL){
 		int len = (int) (brackets_part - last_asterisk);
 		memcpy( prim_type, (last_asterisk+1), len-1 );
-		prim_type[sizeof(prim_type) - 1] = '\0';		
+		prim_type[strlen(prim_type)] = '\0';		
 	}else if(brackets_part){
 		int len = (int) (brackets_part - comp_type);
 		memcpy( prim_type, comp_type, len );
-		prim_type[sizeof(prim_type) - 1] = '\0';					    
+		prim_type[strlen(prim_type)] = '\0';					    
 	}else if(asterisks){
+		fprintf(stderr, "SRC_STR:%s\n", (last_asterisk+1));
+		fprintf(stderr, "LEN(SRC_STR):%d\n", strlen(last_asterisk+1));
+		fprintf(stderr, "DEST_STR (before memcpy):%s\n", prim_type);
 		memcpy( prim_type, (last_asterisk+1), strlen(last_asterisk+1));
-		prim_type[sizeof(prim_type) - 1] = '\0';					    
+		prim_type[strlen(prim_type)] = '\0';
+		fprintf(stderr, "DEST_STR (after memcpy):%s\n", prim_type);		    
 	}else{
 		free(prim_type);
 		prim_type = comp_type;
@@ -146,7 +152,7 @@ char* make_C_decl(char* comp_type, char* var_list){
 	char* ptr_type = NULL;
 	if(asterisks) ptr_type = concat(prim_type, asterisks);
 	else ptr_type = prim_type;
-
+	
 	// Append brackets part to vars of var_list and get result
 	if(brackets_part){
 
@@ -188,6 +194,7 @@ char* make_C_decl(char* comp_type, char* var_list){
 	}else	
 		result = concat(concat(ptr_type, " "), var_list);
 
+	fprintf(stderr, "RESULTTTTTTTTTTT:%s\n", result);
   	return result;
 }
 
@@ -216,10 +223,9 @@ char* make_C_params(char* type, char* var_list){
 			  result = concat(result, concat(type_and_space, next_var));
 		  }
 		}while(next_var);
-	
-		return result;
 	}
 	
+	return result;
 }
 
 char* make_C_comp_type(char* comp_type){
@@ -228,7 +234,7 @@ char* make_C_comp_type(char* comp_type){
 	char* asterisks = NULL;
 	char* C_comp_type = NULL;
 	// Allocate str with size: max len of our primitive types and set to 0
-	char* prim_type = (char*) calloc(strlen("double") + 1, sizeof(char));
+	char* prim_type = (char*) calloc(MAX_TYPE_LEN, sizeof(char));
 
 	if(last_asterisk){ 
 		// Get asterisks part
@@ -240,7 +246,7 @@ char* make_C_comp_type(char* comp_type){
 		if(brackets){
 			// Get primitive type part
 			memcpy( prim_type, (last_asterisk+1),  brackets - last_asterisk - 1 );			
-			prim_type[sizeof(prim_type) - 1] = '\0';
+			prim_type[strlen(prim_type)] = '\0';
 			// Append prefix asterisks
 			C_comp_type = concat(prim_type, asterisks);			
 			
@@ -256,7 +262,7 @@ char* make_C_comp_type(char* comp_type){
 		else{	
 			// Get primitive type part		
 			memcpy( prim_type, (last_asterisk+1), strlen(last_asterisk+1));
-			prim_type[sizeof(prim_type) - 1] = '\0';			
+			prim_type[strlen(prim_type)] = '\0';			
 			
 			// Append asterisks 
 			C_comp_type = concat(prim_type, asterisks);
@@ -267,7 +273,7 @@ char* make_C_comp_type(char* comp_type){
 		if(brackets){
 			// Get primitive type part
 			memcpy( prim_type, comp_type, brackets - comp_type);
-			prim_type[sizeof(prim_type) - 1] = '\0';
+			prim_type[strlen(prim_type)] = '\0';
 
 			// Calculate postfix asterisks 
 			int i;
@@ -305,7 +311,7 @@ char* make_parsable_comp_type(char* comp_type, char* bracket_list){
 
 #define MAXTYPEDEF 32
 char* typedef_table[MAXTYPEDEF][2]; 
-int typedef_table_size = MAXTYPEDEF-1;
+int typedef_table_size = 0;
 
 /* 
 	Typedef getters-setters
@@ -321,7 +327,7 @@ int set_typedef(char* name, char* def)
 		if(table_entry){
 			if(!strcmp(table_entry, name)) {
 				/* found ! */
-				fprintf(stderr, "Typedef already defined...\n");
+				fprintf(stderr, "@@@@@@@@@@@@@@Already defined...\n");
 				return 0;
 				// free(name);
 				// free(typedef_table[i][1]);
@@ -329,9 +335,8 @@ int set_typedef(char* name, char* def)
 				// break;
 			}
 		}
-	
 	}
-	if(i<typedef_table_size)
+	if(i<typedef_table_size) 
 		return 1;
 	else if(typedef_table_size < MAXTYPEDEF) {
 		/* new entry */
@@ -340,7 +345,7 @@ int set_typedef(char* name, char* def)
 		typedef_table[i][0] = name;
 		typedef_table[i][1] = def;
 		typedef_table_size++;
-		 
+		fprintf(stderr, "TYPEDEF DEFINED!\n");
 		return 1;
 	}
 	else
