@@ -69,6 +69,8 @@ char* string_ptuc2c(char* P)
     va_start(arg, pat);
     vfprintf(stderr, pat, arg);
     va_end(arg);
+    fprintf(stderr, "\n");
+    yyerror_count++;
  }
 
 /* 
