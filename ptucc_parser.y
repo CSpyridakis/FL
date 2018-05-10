@@ -63,14 +63,18 @@ extern int line_num;
 
 %start program
 
-%type <crepr> program_decl d decl type_decl init_type_decl type_assign type_type_assign body statements statement_list param_list 
-%type <crepr> func_decl proc_decl func_def proc_def def subprogram_def subprogram_decl prim_type
+%type <crepr> program_decl d decl type_decl init_type_decl type_assign type_type_assign main_body statements statement_list param_list 
+%type <crepr> func_decl proc_decl func_def proc_def def subprogram_def subprogram_decl prim_type func_body proc_body
 %type <crepr> de decl_kind statement var_decl var_type_assign proc_call arguments bracket_list init_var_decl param_specifier
 %type <crepr> type arglist var_list expression compound_type var_assign brackets
 
+ 
+%type <crepr> LHand RHand if_statement for_loop while_loop variable_assignment resultStatement Array arithmetic boolean_expr unary_expr
+%type <crepr> expr_kind basic_token 
+
 %%
 
-program: program_decl d body '.'   		
+program: program_decl d main_body '.'   		
 { 
 	/* We have a successful parse! 
 		Check for any errors and generate output. 
@@ -101,10 +105,10 @@ subprogram_def: func_def { $$ = template("%s\n", $1); }
 	      | proc_def { $$ = template("%s\n", $1); }
 	      ;
 
-func_def: func_decl ';' body ';' { $$ = template("%s%s", $1, $3); }
+func_def: func_decl ';' main_body ';' { $$ = template("%s%s", $1, $3); }
 	;
 
-proc_def: proc_decl ';' body ';' { $$ = template("%s%s", $1, $3); }
+proc_def: proc_decl ';' main_body ';' { $$ = template("%s%s", $1, $3); }
 	;
 
 decl: decl_kind  { $$ = template("%s",$1); }
@@ -205,27 +209,106 @@ prim_type: KW_CHAR { $$ = template("%s", "char"); }
     | KW_BOOLEAN { $$ = template("%s", "int"); }
     ;
 
-body : KW_BEGIN statements KW_END   	{ $$ = template("{\n %s \n}\n", $2); };
 
-statements: %empty				        { $$ = ""; };
-statements: statement_list		   		{ $$ = $1; };
+
+
+
+
+
+main_body : KW_BEGIN statements KW_END   			{ $$ = template("{\n \n %s\treturn 0;\n}\n", $2); }
+          ;
+
+func_body : KW_BEGIN statements KW_END   			{ $$ = template("{\n \n %s\treturn result;\n}\n", $2); }
+		  ;
+
+proc_body : KW_BEGIN statements KW_END   			{ $$ = template("{\n \n %s \n}\n", $2); }
+		  ;
+
+statements: %empty				       	 		{ $$ = ""; }
+		  | statement_list		   				{ $$ = template("%s;\n", $1); }
+		  ;
 
 statement_list: statement                     
-			  | statement_list ';' statement  { $$ = template("%s%s", $1, $3); }; 
+			  | statement_list ';' statement   { $$ = template("%s;\n%s", $1, $3); }
+			  ; 
 
+/*		Page 8/19		*/
+statement: proc_call  							{ $$ = template("	%s", $1); }
+		 | variable_assignment					{ $$ = template("	%s", $1); }	/*   2   */
+		 | resultStatement						{ $$ = template("	%s", $1); }	/*   3   */
+		 | if_statement							{ $$ = template("	%s", $1); }	/*   4   */
+		 | for_loop								{ $$ = template("	%s", $1); }	/*   5   */
+		 | while_loop							{ $$ = template("	%s", $1); }	/*   6   */
+		 ;		
 
-statement: proc_call  						{ $$ = template("	%s;\n", $1); };
-
-proc_call: IDENT '(' arguments ')' 			{ $$ = template("%s(%s)", $1, $3); };
+proc_call: IDENT '(' arguments ')' 				{ $$ = template("%s(%s)", $1, $3); }
+		 ;
 
 arguments : %empty								{ $$ = ""; }
-	  | arglist 						{ $$ = $1; };
+	  	  | arglist 							{ $$ = $1; }
+	  	  ;
 
-arglist: expression							{ $$ = $1; }
-       | arglist ',' expression 			{ $$ = template("%s,%s", $1, $3);  };
+arglist: expression								{ $$ = template("%s",$1); }
+       | arglist ',' expression 				{ $$ = template("%s,%s", $1, $3);  }
+       ;	
 
-expression: POSINT 							/* Default action: $$ = $1 */
-          | REAL							
-          | STRING 							{ $$ = string_ptuc2c($1); };
+expression: expr_kind { $$ = template("%s",$1); }
+		  | expression expr_kind { $$ = template("%s%s",$1, $2); }
+		  ;
+
+expr_kind: /* unary_expr { $$ = template("%s",$1); }
+		  | boolean_expr { $$ = template("%s",$1); }*/
+		   arithmetic { $$ = template("%s",$1); }
+		  | '(' expression ')' { $$ = template("%s",$2); }
+		  | basic_token{ $$ = template("%s",$1); }
+		  /*| arithmetic { $$ = template("%s",$1); }
+		  | arithmetic { $$ = template("%s",$1); }
+		  | arithmetic { $$ = template("%s",$1); }*/
+		  ;
+
+arithmetic: REAL { $$ = ""; }
+		  ;
+
+boolean_expr: REAL { $$ = ""; }
+			;
+
+unary_expr: REAL { $$ = ""; }
+		  ; 
+	
+basic_token: POSINT 	{ $$ = template("%s",$1); }
+           | REAL	{ $$ = template("%s",$1); }					
+           | STRING 	{ $$ = string_ptuc2c($1); }
+           ; 
+
+
+
+
+
+variable_assignment: LHand OP_ASSIGN RHand		{ $$ = template("%s%s", $1,$3); }
+				   ;																																						
+
+LHand: IDENT									{ $$ = template("%s=", $1); }				
+	 ;
+
+Array: IDENT bracket_list						{ $$ = template("%s", $1); }	
+	 ;
+
+RHand: expression									{ $$ = template("%s",$1); }
+	 ;
+
+resultStatement:KW_RESULT OP_ASSIGN expression	{ $$ = template("return %s",$3); }
+			 ;
+
+if_statement: KW_IF expression KW_THEN statement_list 						 { $$ = template("if(%s){\n%s\n}",$2,$4); }
+			| if_statement KW_ELSE if_statement 							 { $$ = template("else %s",$2); }
+			| if_statement KW_ELSE statement_list  KW_END ';'				 { $$ = template(""); }
+			;
+
+for_loop: KW_FOR variable_assignment KW_TO expression KW_DO statement_list KW_END ';'	 	 { $$ = template("for(%s;%s;%s){\n%s\n}",$2,$4,incrementStep($2),$6); }
+		| KW_FOR variable_assignment KW_DOWNTO expression KW_DO statement_list KW_END ';'	 { $$ = template("for(%s;%s;%s){\n%s\n}",$2,$4,incrementStep($2),$6);}
+		;
+
+while_loop: KW_WHILE expression KW_DO statement_list 	KW_END ';'							 { $$ = template("while(%s){\n%s\n}",$2,$4); }
+		  ;				
 
 %%
