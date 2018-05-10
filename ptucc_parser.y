@@ -116,7 +116,7 @@ decl_kind: var_decl 	   { $$ = template("%s",$1); }
 	 ;
 
 type_decl: init_type_decl { $$ = template("%s",$1); }
-         | type_decl init_type_decl { $$ = template("%s",$1); }
+         | type_decl init_type_decl { $$ = template("%s%s",$1, $2); }
          ;	
 
 init_type_decl: KW_TYPE type_assign { $$ = template("%s", $2); } 
@@ -127,19 +127,18 @@ type_assign: type_type_assign { $$ = template("%s", $1); }
 	   ;
 
 type_type_assign: IDENT OP_EQ compound_type ';'		{ char* C_ct = make_C_comp_type($3);
-							  if(set_typedef($1, C_ct)){
-								fprintf(stderr, "-------------- HERE--------------\ncomp_type:%s\n", $3);		
- 							  	$$ = template("typedef %s %s;\n", C_ct, $1);
-							  }else{
-							  	yyerror("Typedef Error!\n");
-							  } } 
+													  
+													  if(set_typedef($1, C_ct))
+													  	$$ = template("typedef %s %s;\n", C_ct, $1);
+													  else
+													  	yyerror("@@@@@@@@@@@@@@Typedef Error!\n"); } 
 		;
 
 var_decl: init_var_decl { $$ = template("%s",$1); }
 		| var_decl init_var_decl { $$ = template("%s%s", $1, $2 ); }
         ;
 
-init_var_decl: KW_VAR var_assign { $$ = template("%s", $2);} 
+init_var_decl: KW_VAR var_assign { $$ = template("%s", $2); } 
 	     ;
 
 var_assign: var_type_assign { $$ = template("%s", $1); }
@@ -147,7 +146,7 @@ var_assign: var_type_assign { $$ = template("%s", $1); }
 	  ; 
 
 var_type_assign: var_list ':' compound_type ';'  { char* C_decl = make_C_decl($3, $1);
-						   $$ = template("%s;\n", C_decl); }
+						   						   $$ = template("%s;\n", C_decl); }
 	       ; 
 
 subprogram_decl: func_decl { $$ = template("%s", $1); }
@@ -186,12 +185,11 @@ compound_type: type { $$ = template("%s", $1); }
 	  	 ;
 
 type: prim_type {  $$ = template("%s", $1); }
-	| IDENT { char* type_def = get_typedef($1);
-		  if(type_def) 
-		  	$$ = template("%s", $1);
-		  else 
-		  	yyerror("Error! Typedef does not exist..."); }
-	;
+	| IDENT {	if(get_typedef($1)) 
+		  			$$ = template("%s", $1);
+		  		else 
+		  			yyerror("@@@@@@@@@@@@@@Error! Typedef does not exist..."); }
+	; 
 
 bracket_list: brackets { $$ = template("%s", $1); }
             | bracket_list brackets { $$ = template("%s%s", $1, $2); }
@@ -231,4 +229,3 @@ expression: POSINT 							/* Default action: $$ = $1 */
           | STRING 							{ $$ = string_ptuc2c($1); };
 
 %%
-

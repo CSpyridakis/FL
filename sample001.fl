@@ -4,19 +4,33 @@
 
 program foo;
 
-(* type string = array of char; *)
+type 
+	str = array of char;
+	str_ptr = array of str;
+	str_dptr = array of str_ptr;
+	char_ptr1 = array[1][2][3] of char;
+	char_ptr2 = array of array[4] of char;
 
-type string = array of array[12][13] of char;
+type
+	babcdefghijklmnop_ptr = array of boolean;
 
-var _: array of char;
-    __ : array of array of boolean;
+var _: str;
+    __ : array of babcdefghijklmnop_ptr;
 
-var ___ : array of array of array of char;
+var ___ : str_dptr;
 
-function func1(a, b, c: array[1][2][3] of char; d, f: real; klp, _klp: char): array of array[4] of char;
+function func1(a, b, c: char_ptr1; d, f: real; klp, _klp: char): char_ptr2;
 begin end; 
 
-function func2(a, b, c, d, e: integer ; f, g: array[1][65] of array[1][213123][1][33][4] of char): array[14] of array of array[1234][12][99][5][123123] of array of real;
+type 
+	holy_char = array[1][213123][1][33][4] of char;
+	oh_my_char = array[1][65] of holy_char;
+	real_ptr = array of real;
+	very_real_ptr = array[1234][12][99][5][123123] of real_ptr;
+	super_real_ptr = array of very_real_ptr;
+	holy_freaking_real = array[14] of super_real_ptr;
+
+function func2(a, b, c, d, e: integer ; f, g: oh_my_char): holy_freaking_real;
 begin end;
 
 var 
@@ -44,4 +58,3 @@ begin
 	writeString('Hello world');
 	writeString('\n')
 end.
-
