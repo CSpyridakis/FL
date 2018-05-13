@@ -38,69 +38,33 @@ BISON=bison
 # app
 #------------------------------------------
 
-
+PATH_TO_SRC= ./src/
+PATH_TO_BIN= ./bin/
 C_PROG= ptucc ptucc_scan sample001
-C_SOURCES= ptucc.c ptucc_scan.c cgen.c
+C_SOURCES= $(PATH_TO_SRC)ptucc.c $(PATH_TO_SRC)ptucc_scan.c $(PATH_TO_SRC)cgen.c
 C_GEN=ptucc_lex.c ptucc_parser.tab.h ptucc_parser.tab.c sample001.c
 
 C_SRC= $(C_SOURCES) $(C_GEN)
 
 C_OBJECTS=$(C_SRC:.c=.o)
 
-.PHONY: all tests release clean distclean
+all: flex_compile bison_compile src_compile
 
-all: ptucc_scan ptucc
+flex_compile:
+	$(FLEX) -o ptucc_lex.c $(PATH_TO_SRC)ptucc_lex.l
 
-ptucc: ptucc.o ptucc_lex.o ptucc_parser.tab.o cgen.o
-	$(CC) $(CFLAGS) -o $@ $+ $(LIBS)
+bison_compile: 
+	$(BISON) -d $(PATH_TO_SRC)ptucc_parser.y
 
-ptucc_scan: ptucc_scan.o ptucc_lex.o ptucc_parser.tab.o cgen.o
-	$(CC) $(CFLAGS) -o $@ $+ $(LIBS)
+src_compile:
+	#TODO MAKEFILE FIX
+	mv ptucc_lex.c ./bin/
+	mv ptucc_parser.tab.c ./bin/
+	mv ptucc_parser.tab.h ./bin/
+	$(CC) $(CFLAGS) -o fl_compiler $(PATH_TO_BIN)ptucc_lex.c $(PATH_TO_BIN)ptucc_parser.tab.c $(PATH_TO_SRC)cgen.c $(PATH_TO_SRC)ptucc.c $(LIBS)
+	mv fl_compiler ./bin/
 
-ptucc_lex.c: ptucc_lex.l ptucc_parser.tab.h
-	$(FLEX) -o ptucc_lex.c ptucc_lex.l
-
-ptucc_parser.tab.c ptucc_parser.tab.h: ptucc_parser.y
-	$(BISON) -d ptucc_parser.y
-
-test: ptucc
-	./ptucc < sample001.fl > sample001.c
-	gcc -Wall -std=c11 -o sample001 sample001.c
-	./sample001
-
-
-#-----------------------------------------------------
-# Build control
-#-----------------------------------------------------
-
-distclean: realclean
-	-touch .depend
-	-rm *~
-
-realclean:
-	-rm $(C_PROG) $(C_OBJECTS) $(C_GEN) .depend *.o sample001.c sample001
-	-rm .depend
-	-touch .depend
-
-depend: $(C_SOURCES)
-	$(CC) $(CFLAGS) -MM $(C_SOURCES) > .depend
-	
-clean: realclean depend
-
-include .depend
-
-# Create release (courses handout) archive
-
-release: clean-release-files tinyos2.tgz
-
-clean-release-files:
-	-rm tinyos2.tgz
-
-TARFILES= cgen.c	cgen.h	Makefile  ptucc.c  ptucc_lex.l	\
-  ptucc_parser.y ptucc_scan.c  ptuclib.h  sample001.fl \
-  README.txt
-
-
-ptuc_example.tgz: $(TARFILES)
-	$(MAKE) distclean
-	tar czvhf ptuc_example.tgz $(TARFILES)
+clean:
+	$(RM) ./bin/*.*
+	$(RM) ./bin/fl_compiler
+	$(RM) ./test/*.c

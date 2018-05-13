@@ -1,0 +1,13 @@
+#!/bin/sh
+
+filefolder="./test/"
+inputFile=$1
+
+flfile="${filefolder}${inputFile}"
+
+postf=.fl
+filename=${inputFile%$postf}
+cfile="${filefolder}${filename}.c"
+
+make
+./bin/fl_compiler < "${flfile}" > "${cfile}"

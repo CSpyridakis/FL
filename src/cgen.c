@@ -3,7 +3,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdarg.h>
-#include "cgen.h"
+#include "../include/cgen.h"
 
 #define MAX_TYPE_LEN 32
 
@@ -136,12 +136,12 @@ char* make_C_decl(char* comp_type, char* var_list){
 		memcpy( prim_type, comp_type, len );
 		prim_type[strlen(prim_type)] = '\0';					    
 	}else if(asterisks){
-		fprintf(stderr, "SRC_STR:%s\n", (last_asterisk+1));
-		fprintf(stderr, "LEN(SRC_STR):%d\n", strlen(last_asterisk+1));
-		fprintf(stderr, "DEST_STR (before memcpy):%s\n", prim_type);
+		//fprintf(stderr, "SRC_STR:%s\n", (last_asterisk+1));
+		//fprintf(stderr, "LEN(SRC_STR):%d\n", strlen(last_asterisk+1));
+		//fprintf(stderr, "DEST_STR (before memcpy):%s\n", prim_type);
 		memcpy( prim_type, (last_asterisk+1), strlen(last_asterisk+1));
 		prim_type[strlen(prim_type)] = '\0';
-		fprintf(stderr, "DEST_STR (after memcpy):%s\n", prim_type);		    
+		//fprintf(stderr, "DEST_STR (after memcpy):%s\n", prim_type);		    
 	}else{
 		free(prim_type);
 		prim_type = comp_type;
@@ -194,7 +194,7 @@ char* make_C_decl(char* comp_type, char* var_list){
 	}else	
 		result = concat(concat(ptr_type, " "), var_list);
 
-	fprintf(stderr, "RESULTTTTTTTTTTT:%s\n", result);
+	//fprintf(stderr, "RESULTTTTTTTTTTT:%s\n", result);
   	return result;
 }
 
@@ -327,7 +327,7 @@ int set_typedef(char* name, char* def)
 		if(table_entry){
 			if(!strcmp(table_entry, name)) {
 				/* found ! */
-				fprintf(stderr, "@@@@@@@@@@@@@@Already defined...\n");
+				//fprintf(stderr, "@@@@@@@@@@@@@@Already defined...\n");
 				return 0;
 				// free(name);
 				// free(typedef_table[i][1]);
@@ -345,7 +345,7 @@ int set_typedef(char* name, char* def)
 		typedef_table[i][0] = name;
 		typedef_table[i][1] = def;
 		typedef_table_size++;
-		fprintf(stderr, "TYPEDEF DEFINED!\n");
+		//fprintf(stderr, "TYPEDEF DEFINED!\n");
 		return 1;
 	}
 	else
@@ -360,3 +360,33 @@ char* get_typedef(char* name)
 	}
 	return NULL;
 }
+
+
+/*
+---------------------------------------------------------------------------------------------
+*/
+char * subStringFromSeparator(char * string){
+	// ":" separator to ascii 
+	int separatorAsciiValue=32;
+	int index = 0;
+
+	int found = 0;
+	int strIndex[] = {0, -1};
+	int maxIndex = strlen(string)-1;
+
+	for(int i=0; i<=maxIndex && found<=index; i++){
+		if((int)string[i]==separatorAsciiValue || i==maxIndex){
+		  found++;
+		  strIndex[0] = strIndex[1]+1;
+		  strIndex[1] = (i == maxIndex) ? i+1 : i;
+		}
+	}
+	return found>index ? (char*)strndup(string+strIndex[0], strIndex[1]) : "";
+}
+
+char * incrementStep(char * s){
+	return subStringFromSeparator(s);
+}
+
+
+

@@ -1,12 +1,12 @@
-# Fictional Language to C Compiler 
- (a "Theory of Computation" course project using flex & bison)
+# Fictional Language to C Trans-compiler 
+ ( Trans-compiler using flex & bison based on "Theory of Computation" course project)
 
 ## Build:
 
-  touch .depend
+  * touch .depend
   
-  make
+  * make (if you need only to make executables)
 
 ## Test:
 
-  ptucc < sample001.fl > sample001.c
+  * ./fl file.fl

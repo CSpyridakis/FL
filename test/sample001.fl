@@ -1,0 +1,45 @@
+(* 
+	Sample program 
+*)
+
+program foo;
+
+var 
+	x,y,z: integer;
+
+
+function nothing(): integer;
+begin
+	result := 10;
+	return
+end;
+
+
+begin
+	be:
+	x:=1;
+	y:=10;
+
+	f:
+	for z:=x to y do begin
+		if z=5 then
+			printf("HERE YOU ARE %d\n",nothing())
+
+	end;
+
+	w:
+	while x<>30 do
+		x:=x+1;
+		printf("X=%d\n",x)
+	;
+
+	goto en;
+
+	r:
+	repeat 
+	until 1<>1;
+
+	en:
+	printf("Exit")
+
+end.
