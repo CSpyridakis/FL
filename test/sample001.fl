@@ -7,6 +7,10 @@ program foo;
 var 
 	x,y,z: integer;
 
+type
+	something = array of char;
+	a_func = function(x:integer): boolean;
+	a_proc = procedure(a, b, g: array of char);
 
 function nothing(): integer;
 begin

@@ -4,6 +4,9 @@
 /* program  foo */ 
 
 int x, y, z;
+typedef char* something;
+typedef int (*a_func)(int x);
+typedef void (*a_proc)(char* a, char*  b, char*  g);
 int nothing(){
  
 result = 10;

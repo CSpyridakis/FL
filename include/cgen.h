@@ -57,6 +57,11 @@ char* concat(const char *s1, const char *s2);
 ///
 char* str_repeat(const char * s, int n);
 
+///
+//  In str replace orig with rep
+///
+char* replace_sub_str(char* str, char* orig, char* rep);
+
 /* 
 	C-parsing functions 
 */ 

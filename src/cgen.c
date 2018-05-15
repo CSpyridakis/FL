@@ -79,6 +79,22 @@ char* string_ptuc2c(char* P)
 	String manipulation functions 
 */
 
+char* replace_sub_str(char* str, char* orig, char* rep)
+{
+  static char buffer[4096];
+  char *p;
+
+  if(!(p = strstr(str, orig)))  // Is 'orig' even in 'str'?
+    return str;
+
+  strncpy(buffer, str, p-str); // Copy characters from 'str' start to 'orig' str
+  buffer[p-str] = '\0';
+
+  sprintf(buffer+(p-str), "%s%s", rep, p+strlen(orig));
+
+  return buffer;
+}
+
 char* concat(const char *s1, const char *s2){
     char* result;
     if((result = malloc(strlen(s1)+strlen(s2)+1))){
@@ -229,10 +245,11 @@ char* make_C_params(char* type, char* var_list){
 }
 
 char* make_C_comp_type(char* comp_type){
+	char* C_comp_type = NULL;
 	char* last_asterisk = strrchr(comp_type, '*');
 	char* brackets = strpbrk(comp_type, "[");
 	char* asterisks = NULL;
-	char* C_comp_type = NULL;
+	
 	// Allocate str with size: max len of our primitive types and set to 0
 	char* prim_type = (char*) calloc(MAX_TYPE_LEN, sizeof(char));
 
@@ -288,8 +305,7 @@ char* make_C_comp_type(char* comp_type){
 		else	
 			C_comp_type = comp_type;
 	}
-	
-	
+
 	return C_comp_type;
 }
 

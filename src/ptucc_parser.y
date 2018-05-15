@@ -140,12 +140,20 @@ type_assign: type_type_assign 						{ $$ = template("%s", $1); 			}
 	   | type_assign type_type_assign 				{ $$ = template("%s%s", $1, $2 ); 	}
 	   ;
 
-type_type_assign: IDENT OP_EQ compound_type ';'		{ char* C_ct = make_C_comp_type($3);
-													  
-													  if(set_typedef($1, C_ct))
+type_type_assign: IDENT OP_EQ compound_type ';'		{ char* ct = $3;
+													  char* id = $1;
+													  if(strstr(ct, "FUNCTION") == NULL &&
+														 strstr(ct, "PROCEDURE)") == NULL){
+													  	
+													  	char* C_ct = make_C_comp_type(ct);
 													  	$$ = template("typedef %s %s;\n", C_ct, $1);
-													  else
-													  	yyerror("Typedef Error!\n"); 
+													  
+													  }else{
+													  	if(strstr(ct, "FUNCTION"))
+													  		$$ = template("typedef %s;\n", replace_sub_str(ct, "FUNCTION", id) );
+													  	else if(strstr(ct, "PROCEDURE"))
+													  		$$ = template("typedef %s;\n", replace_sub_str(ct, "PROCEDURE", id) );
+													  }
 													} 
 				;
 
@@ -170,13 +178,16 @@ subprogram_decl: func_decl 							{ $$ = template("%s", $1); 			}
 	       | proc_decl 								{ $$ = template("%s", $1); 			}
 	       ; 
 
-func_decl: KW_FUNC IDENT '(' param_list ')' ':' compound_type 	{ 
+func_decl: KW_FUNC '(' param_list ')' ':' compound_type			{   char* C_ct = make_C_comp_type($6); 
+																	$$ = template("%s (*FUNCTION)(%s)", C_ct, $3); }
+		 | KW_FUNC IDENT '(' param_list ')' ':' compound_type 	{ 
 																	char* C_ct = make_C_comp_type($7); 
 																	$$ = template("%s %s(%s)", C_ct , $2, $4 ); 
 																}
 	 	  ;
 
-proc_decl: KW_PROC IDENT '(' param_list ')'  		{ $$ = template("void %s(%s)", $2, $4 ); }
+proc_decl: KW_PROC '(' param_list ')' 				{ $$ = template("void (*PROCEDURE)(%s)", $3); } 
+		 | KW_PROC IDENT '(' param_list ')'  		{ $$ = template("void %s(%s)", $2, $4 ); }
          ;
 
 param_list: param_specifier	 						{ $$ = template("%s",$1); 			}
@@ -211,12 +222,7 @@ type: KW_CHAR 									{ $$ = template("%s", "char"); 		}
     | KW_INT  										{ $$ = template("%s", "int"); 		}
     | KW_REAL 										{ $$ = template("%s", "double"); 	}
     | KW_BOOLEAN 									{ $$ = template("%s", "int"); 		}
-	| IDENT 										{	
-														if(get_typedef($1)) 
-		  													$$ = template("%s", $1);
-												  		else 
-												  			yyerror("Error! Typedef does not exist..."); 
-												  	}
+	| IDENT 										{ $$ = template("%s", $1); }
 	; 
 
 bracket_list: brackets 								{ $$ = template("%s", $1); 			}
