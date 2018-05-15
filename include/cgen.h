@@ -77,6 +77,6 @@ int set_typedef(char* name, char* def);
 char* get_typedef(char* name);
 
 
-char * incrementStep(char * s);
+char * idenName(char * s);
 
 #endif

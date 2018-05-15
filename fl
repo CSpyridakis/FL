@@ -3,11 +3,11 @@
 filefolder="./test/"
 inputFile=$1
 
-flfile="${filefolder}${inputFile}"
+flfile="${inputFile}"
 
 postf=.fl
 filename=${inputFile%$postf}
-cfile="${filefolder}${filename}.c"
+cfile="${filename}.c"
 
 make
 ./bin/fl_compiler < "${flfile}" > "${cfile}"

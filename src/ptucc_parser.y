@@ -74,12 +74,10 @@ extern int line_num;
 %type <crepr> body special_body main_body 
 
 	/* Expressions' types */
-%type <crepr> expression basicExpr complexExpr rawData variable functionCall basicDTV complexDTV exprWithOperators exprWithParenthsis complexBracketsL complexBrackets
-%type <crepr> exprWithOneOperator exprWithTwoOperators exprWithOnePrefixOperator exprWithOneLogical numericOperation relationalOperation logicalOperation
-%type <crepr> OP_CAST
+%type <crepr> expression complexBracketsL functionCall arglistCall
 
 	/* Commands */
-%type <crepr> commands basicCommand commandGroup variableAssignment resultAssignment ifStatement ifStatementMiddle forLoop whileLoop labelStatement gotoStatement returnStatement
+%type <crepr> commands basicCommand variableAssignment ifStatementMiddle
 
 %%
 
@@ -253,188 +251,71 @@ special_body: %empty { $$ = ";"; }
 				  ;
 
 
-/*---------------------------------------------	EXPRESSIONS		START	 ---------------------------------------------*/
-expression : basicExpr																{ $$ = template("%s",$1); 		  }
-		   | complexExpr															{ $$ = template("%s",$1); 		  }
+
+expression : POSINT 							{ $$ = template("%s",$1); 		   }
+		   | REAL								{ $$ = template("%s",$1); 		   }					
+		   | STRING 							{ $$ = template("%s",$1); 		   } /*TODO : Change this function*/
+		   | IDENT complexBracketsL 			{ $$ = template("%s%s",$1,$2); 	   }
+		   | functionCall						{ $$ = template("%s",$1); 		   }
+		   | '+' expression 					{ $$ = template("+%s",$2); 		   }
+		   | '-' expression 					{ $$ = template("-%s",$2); 		   }  
+		   | OP_NOT expression 	   				{ $$ = template("!%s",$2);  	   }
+		   | expression '+' expression 			{ $$ = template("%s + %s",$1,$3);  }
+		   | expression '-' expression 			{ $$ = template("%s - %s",$1,$3);  }
+		   | expression '/' expression 			{ $$ = template("%s / %s",$1,$3);  }
+		   | expression '*' expression 			{ $$ = template("%s * %s",$1,$3);  }
+		   | expression '%' expression 			{ $$ = template("%s % %s",$1,$3);  }
+		   | expression OP_EQ   expression 		{ $$ = template("%s == %s",$1,$3); }
+		   | expression OP_INEQ expression 		{ $$ = template("%s != %s",$1,$3); }
+		   | expression OP_LT   expression 		{ $$ = template("%s < %s",$1,$3);  }
+		   | expression OP_LTE  expression 		{ $$ = template("%s <= %s",$1,$3); }
+		   | expression OP_GT   expression 		{ $$ = template("%s > %s",$1,$3);  }
+		   | expression OP_GTE  expression 		{ $$ = template("%s >= %s",$1,$3); }
+		   | expression OP_AND  expression 		{ $$ = template("%s && %s",$1,$3); }
+		   | expression OP_OR   expression 		{ $$ = template("%s || %s",$1,$3); }
+		   | '(' expression ')'					{ $$ = template("(%s)",$2);    	   }
+		   | expression '(' expression ')'		{ $$ = template("%s (%s)",$1,$3);  }												
 		   ;
 
 
-	/*__________	1.Basic 	__________*/		
-	basicExpr : rawData																{ $$ = template("%s",$1); 		  }
-			  | variable 															{ $$ = template("%s",$1); 		  }
-			  | functionCall														{ $$ = template("%s",$1); 		  }
-			  ;
+			complexBracketsL : %empty  										{ $$ = ""; 						  }
+							 | '[' expression ']'							{ $$ = template("[%s]", $2); 	  }
+							 | complexBracketsL '[' expression ']'			{ $$ = template("%s[%s]",$1,$3);  }
+							 ; 
 
-		
-			/*...1.1 RAW DATA (POS-INT, POS-REAL, STRING)...*/		
-			rawData : POSINT 														{ $$ = template("%s",$1); 		  }
-			        | REAL															{ $$ = template("%s",$1); 		  }					
-			        | STRING 														{ $$ = template("%s",$1); 		  } /*TODO : Change this function*/
-				    ;																
-
-			/*...1.2 Variables ...*/
-			variable  : basicDTV 
-					  | complexDTV
-					  ;
-
-					/*1.2.1 Basic data type variable*/
-					basicDTV : IDENT 												{ $$ = template("%s",$1); 		  }
-						     ;
-
-					/*1.2.2 Complex data type variable */
-					complexDTV : IDENT complexBracketsL 							{ $$ = template("%s%s",$1,$2); 	  }
-							   ;
-
-							complexBracketsL : complexBrackets 						{ $$ = template("%s", $1); 		  }
-							             	 | complexBracketsL complexBrackets 	{ $$ = template("%s%s", $1, $2);  }
-							             	 ; 
-
-							complexBrackets : %empty  								{ $$ = ""; 						  }
-									 		| '[' expression ']'					{ $$ = template("[%s]", $2); 	  }
-									 		;
-
-
-			/*...1.3 Functions Calls...*/
-			functionCall : IDENT '(' arguments ')' 									{ $$ = template("%s(%s)",$1,$3);  }
+			functionCall : IDENT '(' ')' 									{ $$ = template("%s()",$1);  	  }
+						 | IDENT '(' arglistCall ')' 						{ $$ = template("%s(%s)",$1,$3);  }
 						 ;
-						
-						/*Functions Args*/	
-						arguments : %empty											{ $$ = ""; 						  }
-				  	  			  | arglist 										{ $$ = $1; 						  }
-				  	  			  ;
 
-						arglist: expression											{ $$ = template("%s",$1); }
-			      			   | arglist ',' expression 							{ $$ = template("%s,%s", $1, $3); }
+						arglistCall: expression								{ $$ = template("%s",$1);		  }
+			      			   | arglistCall ',' expression 				{ $$ = template("%s,%s", $1, $3); }
 			       			   ;	
 
-
-	/*__________	2.Complex	 __________*/
-	complexExpr : exprWithOperators
-			    | exprWithParenthsis
-			    ;
-
-			/*...2.1 WITH OPERATORS...*/
-			exprWithOperators : exprWithOneOperator
-							  | exprWithTwoOperators
-							  ;
-
-				    /*2.1.1 One operator*/
-				    exprWithOneOperator : exprWithOnePrefixOperator
-				    					| exprWithOneLogical 
-				    					;
-
-					    	/*2.1.1.1 Prefix*/
-					    	exprWithOnePrefixOperator : '+' expression 				{ $$ = template("+%s",$2); 		 	}
-					    							  | '-' expression 				{ $$ = template("-%s",$2); 		 	}  
-					    							  | OP_CAST expression			{ $$ = template("%s%s",$1,$2); 		} 
-					    							  ;
-
-					    					OP_CAST : OP_CAST_INT 					{ $$ = template("(int)"); 		 	}
-					    						    | OP_CAST_CHAR 					{ $$ = template("(char)");			}
-					    						    | OP_CAST_REAL 					{ $$ = template("(float)");			}
-					    						    | OP_CAST_BOOL 					{ $$ = template("(int)");			}
-					    						    ;
-
-
-					    	/*2.1.1.2 OneLogical*/
-					    	exprWithOneLogical : OP_NOT expression 	   				{ $$ = template("!%s",$2);  		}
-					    					   ;	
-					    	
-
-				    /*2.1.2 Two operators*/
-					exprWithTwoOperators : numericOperation
-										 | relationalOperation
-										 | logicalOperation
-										 ;
-
-							/*------------	Basic Operations Implementation START ------------*/
-							numericOperation 	: expression '+' expression 		{ $$ = template("%s + %s",$1,$3);  }
-											 	| expression '-' expression 		{ $$ = template("%s - %s",$1,$3);  }
-											 	| expression '/' expression 		{ $$ = template("%s / %s",$1,$3);  }
-											 	| expression '*' expression 		{ $$ = template("%s * %s",$1,$3);  }
-											 	| expression '%' expression 		{ $$ = template("%s % %s",$1,$3);  }
-							    			 	;
-
-							relationalOperation : expression OP_EQ   expression 	{ $$ = template("%s == %s",$1,$3); }
-											    | expression OP_INEQ expression 	{ $$ = template("%s != %s",$1,$3); }
-											    | expression OP_LT   expression 	{ $$ = template("%s < %s",$1,$3);  }
-											    | expression OP_LTE  expression 	{ $$ = template("%s <= %s",$1,$3); }
-											    | expression OP_GT   expression 	{ $$ = template("%s > %s",$1,$3);  }
-											    | expression OP_GTE  expression 	{ $$ = template("%s >= %s",$1,$3); }
-											    ;
-
-							logicalOperation    : expression OP_AND  expression 	{ $$ = template("%s && %s",$1,$3); }
-											    | expression OP_OR   expression 	{ $$ = template("%s || %s",$1,$3); }
-											    ;
-							/************	Basic Operations Implementation END ************/
-
-
-			/*...2.2 WITH PARETHESIS...*/
-			exprWithParenthsis 		  : '(' expression ')'						 	{ $$ = template("(%s)",$2);    	   }
-							   		  | expression '(' expression ')'				{ $$ = template("%s (%s)",$1,$3);  }
-							   		  ; 
-
-/************************************************	EXPRESSIONS		END		 ************************************************/
-
-/*---------------------------------------------		COMMANDS	START	 ---------------------------------------------*/
-commands : basicCommand																{ $$ = template("%s",$1); 				}
-		 | commandGroup																{ $$ = template("%s",$1);				}
+commands : basicCommand
+		 | commands ';' basicCommand 										{ $$ = template("%s\n%s",$1,$3);  }
 		 ;
 
-	/*__________	1. Basic 	__________*/
-	basicCommand : variableAssignment 												{ $$ = template("%s;",$1); 				}
-				 | resultAssignment													{ $$ = template("%s;",$1); 				}
-				 | ifStatement 														{ $$ = template("%s",$1); 				}
-				 | forLoop 															{ $$ = template("%s",$1); 				}
-				 | whileLoop 														{ $$ = template("%s",$1); 				}
-				 | labelStatement 													{ $$ = template("%s",$1); 				}
-				 | gotoStatement 													{ $$ = template("%s;",$1);				}
-				 | returnStatement													{ $$ = template("%s;",$1);				}
-				 | functionCall														{ $$ = template("%s;",$1); 				}
-				 ;
-			
 
-			/*------------	Basic Commands Implementation START ------------*/
-			variableAssignment : IDENT OP_ASSIGN expression 						{ $$ = template("%s = %s",$1,$3);	  	}
-							   | IDENT complexBracketsL OP_ASSIGN expression		{ $$ = template("%s%s = %s",$1,$2,$4);	}
-							   ;
+basicCommand : variableAssignment
+		 | KW_RESULT OP_ASSIGN expression 									{ $$ = template("result = %s",$3);    										}/*Result assignment*/
+		 | KW_IF expression KW_THEN special_body ifStatementMiddle			{ $$ = template("if(%s)%s%s",$2,$4,$5); 									}/*If statement*/
+		 | KW_FOR variableAssignment KW_TO expression KW_DO special_body 	{ $$ = template("for(%s;%s<%s;%s++)%s",$2,idenName($2),$4,idenName($2),$6);	}/*For loop ++*/
+		 | KW_FOR variableAssignment KW_DOWNTO expression KW_DO special_body{ $$ = template("for(%s;%s>%s;%s--)%s",$2,idenName($2),$4,idenName($2),$6); }/*For loop --*/
+		 | KW_WHILE expression KW_DO special_body							{ $$ = template("while(%s)%s",$2,$4); 		 								}/*While loop*/
+		 | KW_REPEAT special_body KW_UNTIL expression  				    	{ $$ = template("do%swhile(!(%s));",$2,$4); 								}/*Repeat*/
+		 | IDENT ':'  														{ $$ = template("%s:\n ",$1);												}/*Empty Label*/
+		 | IDENT ':' commands												{ $$ = template("%s:\n 	%s",$1,$3);											}/*Label with statements*/		
+		 | KW_GOTO IDENT													{ $$ = template("goto %s",$2);												}/*Goto statement*/
+		 | KW_RETURN 														{ $$ = template("return result");											}/*Return*/
+		 | functionCall														{ $$ = template("%s",$1); 													}/*Function call*/
+		 ;
 
-			resultAssignment : KW_RESULT OP_ASSIGN expression 						{ $$ = template("result = %s",$3);    	}
-							 ;
+		 variableAssignment: IDENT complexBracketsL OP_ASSIGN expression	{ $$ = template("%s%s = %s",$1,$2,$4);										}/*Variable assignment*/
+				           ;
 
-		 	ifStatement : KW_IF expression KW_THEN special_body ifStatementMiddle	{ $$ = template("if(%s)%s%s",$2,$4,$5); }
-		 				;
-
-		 				ifStatementMiddle : %empty 									{ $$ = ""; 	    						}
-	 									  | KW_ELSE KW_IF expression KW_THEN special_body ifStatementMiddle { $$ = template("else if(%s)%s%s",$3,$5,$6); }
-		 			   					  |	KW_ELSE special_body 					{ $$ = template("else%s",$2); 			}
-		 								  ; 
-
-		 	forLoop : KW_FOR variableAssignment KW_TO expression KW_DO special_body 	{ $$ = template("for(%s;%s<%s;%s++)%s",$2,incrementStep($2),$4,incrementStep($2),$6);}
-					| KW_FOR variableAssignment KW_DOWNTO expression KW_DO special_body { $$ = template("for(%s;%s>%s;%s--)%s",$2,incrementStep($2),$4,incrementStep($2),$6);}
-		 	  	    ; 
-
-		 	whileLoop : KW_WHILE expression KW_DO special_body							 { $$ = template("while(%s)%s",$2,$4); 		 }
-		 			  | KW_REPEAT special_body KW_UNTIL expression  				     { $$ = template("do%swhile(!(%s));",$2,$4); }
-		 			  ;	
-		 			  
-
-		 	labelStatement : IDENT ':'  											{ $$ = template("%s:\n ",$1);		}
-		 				   | IDENT ':' commandGroup									{ $$ = template("%s:\n 	%s",$1,$3);	}			
-		 				   ;	
-
-		 	gotoStatement : KW_GOTO  IDENT											{ $$ = template("goto %s",$2);		}
-		 				  ;
-
-		 	returnStatement : KW_RETURN 											{ $$ = template("return result");	}
-		 				    ;
-			/***********	Basic Commands Implementation END ***********/
-
-
-	/*__________	2. Complex	 __________*/
-	commandGroup : basicCommand														{ $$ = template("%s",$1);			}
-				 | commandGroup ';' basicCommand 									{ $$ = template("%s\n%s",$1,$3);    }
-				 ; 
-/************************************************	COMMANDS	END		 ************************************************/
+		 ifStatementMiddle : %empty 										{ $$ = ""; 	    							 }
+	 	 				   | KW_ELSE KW_IF expression KW_THEN special_body ifStatementMiddle  { $$ = template("else if(%s)%s%s",$3,$5,$6); }
+		    			   | KW_ELSE special_body 							{ $$ = template("else%s",$2); 				 }
+						   ; 
 
 %%

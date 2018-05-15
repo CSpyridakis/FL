@@ -384,7 +384,7 @@ char * subStringFromSeparator(char * string){
 	return found>index ? (char*)strndup(string+strIndex[0], strIndex[1]) : "";
 }
 
-char * incrementStep(char * s){
+char * idenName(char * s){
 	return subStringFromSeparator(s);
 }
 
