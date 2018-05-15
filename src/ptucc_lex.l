@@ -105,25 +105,7 @@ and|"&&" { if(DEBUG){fprintf(destPrint,  "token OP_AND: %s\n",    				yytext);} 
 or|"||"  { if(DEBUG){fprintf(destPrint,  "token OP_OR: %s\n",     				yytext);}         return OP_OR;     }
 not|"!"	 { if(DEBUG){fprintf(destPrint,  "token OP_NOT: %s\n",    				yytext);}         return OP_NOT;    }
 ":="	 { if(DEBUG){fprintf(destPrint,  "token OP_ASSIGN: %s\n", 				yytext);}  		  return OP_ASSIGN; }
-"("{DATA_TYPE}")" 	{ 
-		   				if(DEBUG){fprintf(destPrint,  "token OP_CAST: %s\n",   yytext);}      		   
-		   				switch(yytext[1]){
-		   					case 'i' :
-		   						return OP_CAST_INT;
-		   						break;
-		   					case 'b' :
-		   						return OP_CAST_BOOL;
-		   						break;
-		   					case 'c' :
-		   						return OP_CAST_CHAR;
-		   						break;
-		   					case 'r' :
-		   						return OP_CAST_REAL;
-		   						break;
-		   					
-		   				}
-		   				   
-					}
+
 
 	/* 8. Delimiters */
 ";"		{ if(DEBUG){fprintf(destPrint,  "token DELIM_SEMICOLON: %s\n", 			yytext);} 			return ';';		}

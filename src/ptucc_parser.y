@@ -74,10 +74,12 @@ extern int line_num;
 %type <crepr> body special_body main_body 
 
 	/* Expressions' types */
-%type <crepr> expression complexBracketsL functionCall arglistCall
+%type <crepr> expression complexBracketsL functionCall arglistCall casting 
 
 	/* Commands */
 %type <crepr> commands basicCommand variableAssignment ifStatementMiddle
+
+%left OP_NOT '*' '/' '+' '-' OP_EQ OP_INEQ OP_LT OP_LTE OP_GT OP_GTE OP_AND OP_OR
 
 %%
 
@@ -234,12 +236,12 @@ brackets: %empty  	 								{ $$ = ""; 							}
 	1) Tabs fix
 */
 
-body : KW_BEGIN statements KW_END   			{ $$ = template("{\n \n%sreturn result;\n}\n", replaceNL($2)); }
+body : KW_BEGIN statements KW_END   			{ $$ = template("{\n \n%sreturn result;\n}\n", $2); }
 		  ;
 
 special_body: %empty { $$ = ";"; }
 			| basicCommand 						{ $$ = template("\n%s", $1); 			}
-			| KW_BEGIN statements KW_END 		{ $$ = template("\n{\n%s\n}\n", replaceNL($2)); }
+			| KW_BEGIN statements KW_END 		{ $$ = template("\n{\n%s\n}\n", $2); }
 		    ;
 
 		statements: %empty				       	{ $$ = ""; 								}
@@ -269,9 +271,16 @@ expression : POSINT 							{ $$ = template("%s",$1); 		   }
 		   | expression OP_AND  expression 		{ $$ = template("%s && %s",$1,$3); }
 		   | expression OP_OR   expression 		{ $$ = template("%s || %s",$1,$3); }
 		   | '(' expression ')'					{ $$ = template("(%s)",$2);    	   }
-		   | expression '(' expression ')'		{ $$ = template("%s (%s)",$1,$3);  }												
+		   | expression '(' expression ')'		{ $$ = template("%s (%s)",$1,$3);  }
+		   		
 		   ;
 
+			casting: '(' KW_INT ')' expression	{ $$ = template("(int)%s",$4);     }
+				   | '(' KW_CHAR ')' expression	{ $$ = template("(char)%s",$4);    }
+				   | '(' KW_REAL ')' expression	{ $$ = template("(float)%s",$4);   }
+				   | '(' KW_BOOLEAN ')' expression{ $$ = template("(int)%s",$4);   }
+				   | '(' IDENT ')'  expression	{ $$ = template("(%s)%s",$2,$4);   }
+				   ;
 
 			complexBracketsL : %empty  										{ $$ = ""; 						  }
 							 | '[' expression ']'							{ $$ = template("[%s]", $2); 	  }

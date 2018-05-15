@@ -412,3 +412,23 @@ char * replaceNL(const char * srcStr){
 
 	return ret;
 }
+/*
+char * casting(){
+    		   
+	switch(yytext[1]){
+		case 'i' :
+		return OP_CAST_INT;
+		break;
+	case 'b' :
+	return OP_CAST_BOOL;
+	break;
+	case 'c' :
+	return OP_CAST_CHAR;
+	break;
+	case 'r' :
+	return OP_CAST_REAL;
+	break;	
+	}
+		   				  
+}
+*/
