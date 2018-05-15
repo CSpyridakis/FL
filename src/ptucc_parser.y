@@ -67,7 +67,7 @@ extern int line_num;
 
 	/*TYPE*/
 %type <crepr> program_decl d decl type_decl init_type_decl type_assign type_type_assign  statements statement_list param_list 
-%type <crepr> func_decl proc_decl func_def proc_def def subprogram_def subprogram_decl prim_type func_body proc_body
+%type <crepr> func_decl proc_decl func_def proc_def def subprogram_def subprogram_decl func_body proc_body
 %type <crepr> de decl_kind statement var_decl var_type_assign proc_call arguments bracket_list init_var_decl param_specifier
 %type <crepr> type arglist var_list compound_type var_assign brackets
 
@@ -205,7 +205,10 @@ compound_type: type 								{ $$ = template("%s", $1); 			}
 	     	 | KW_ARRAY bracket_list KW_OF compound_type { $$ = make_parsable_comp_type($4, $2); }
 	  		 ;
 
-type: prim_type 									{  $$ = template("%s", $1); }
+type: KW_CHAR 									{ $$ = template("%s", "char"); 		}
+    | KW_INT  										{ $$ = template("%s", "int"); 		}
+    | KW_REAL 										{ $$ = template("%s", "double"); 	}
+    | KW_BOOLEAN 									{ $$ = template("%s", "int"); 		}
 	| IDENT 										{	
 														if(get_typedef($1)) 
 		  													$$ = template("%s", $1);
@@ -222,13 +225,6 @@ brackets: %empty  	 								{ $$ = ""; 							}
 		| '[' POSINT ']'							{ $$ = template("[%s]", $2); 		}
 		;
 
-prim_type: KW_CHAR 									{ $$ = template("%s", "char"); 		}
-    | KW_INT  										{ $$ = template("%s", "int"); 		}
-    | KW_REAL 										{ $$ = template("%s", "double"); 	}
-    | KW_BOOLEAN 									{ $$ = template("%s", "int"); 		}
-    ;
-
-
 /*------------------------------------------------------------------------------------MAIN/FUNCTION/PROCEDURE BODY---------------------------------------------------------------------------------------*/
 
 /*
@@ -238,18 +234,17 @@ prim_type: KW_CHAR 									{ $$ = template("%s", "char"); 		}
 	1) Tabs fix
 */
 
-body : KW_BEGIN statements KW_END   			{ $$ = template("{\n \n %sreturn result;\n}\n", $2); }
+body : KW_BEGIN statements KW_END   			{ $$ = template("{\n \n%sreturn result;\n}\n", replaceNL($2)); }
 		  ;
 
 special_body: %empty { $$ = ";"; }
-			| basicCommand 						{ $$ = template("%s\n", $1); 			}
-			| KW_BEGIN statements KW_END 		{ $$ = template("\n{\n\t%s\n}\n", $2); }
+			| basicCommand 						{ $$ = template("\n%s", $1); 			}
+			| KW_BEGIN statements KW_END 		{ $$ = template("\n{\n%s\n}\n", replaceNL($2)); }
 		    ;
 
 		statements: %empty				       	{ $$ = ""; 								}
 				  | commands		   			{ $$ = template("%s\n", $1); 			}
 				  ;
-
 
 
 expression : POSINT 							{ $$ = template("%s",$1); 		   }
@@ -295,22 +290,21 @@ commands : basicCommand
 		 | commands ';' basicCommand 										{ $$ = template("%s\n%s",$1,$3);  }
 		 ;
 
-
 basicCommand : variableAssignment
-		 | KW_RESULT OP_ASSIGN expression 									{ $$ = template("result = %s",$3);    										}/*Result assignment*/
+		 | KW_RESULT OP_ASSIGN expression 									{ $$ = template("result = %s;",$3);    										}/*Result assignment*/
 		 | KW_IF expression KW_THEN special_body ifStatementMiddle			{ $$ = template("if(%s)%s%s",$2,$4,$5); 									}/*If statement*/
-		 | KW_FOR variableAssignment KW_TO expression KW_DO special_body 	{ $$ = template("for(%s;%s<%s;%s++)%s",$2,idenName($2),$4,idenName($2),$6);	}/*For loop ++*/
-		 | KW_FOR variableAssignment KW_DOWNTO expression KW_DO special_body{ $$ = template("for(%s;%s>%s;%s--)%s",$2,idenName($2),$4,idenName($2),$6); }/*For loop --*/
+		 | KW_FOR variableAssignment KW_TO expression KW_DO special_body 	{ $$ = template("for(%s %s < %s; %s++)%s",$2,idenName($2),$4,idenName($2),$6);	}/*For loop ++*/
+		 | KW_FOR variableAssignment KW_DOWNTO expression KW_DO special_body{ $$ = template("for(%s %s > %s; %s--)%s",$2,idenName($2),$4,idenName($2),$6); }/*For loop --*/
 		 | KW_WHILE expression KW_DO special_body							{ $$ = template("while(%s)%s",$2,$4); 		 								}/*While loop*/
-		 | KW_REPEAT special_body KW_UNTIL expression  				    	{ $$ = template("do%swhile(!(%s));",$2,$4); 								}/*Repeat*/
-		 | IDENT ':'  														{ $$ = template("%s:\n ",$1);												}/*Empty Label*/
-		 | IDENT ':' commands												{ $$ = template("%s:\n 	%s",$1,$3);											}/*Label with statements*/		
-		 | KW_GOTO IDENT													{ $$ = template("goto %s",$2);												}/*Goto statement*/
-		 | KW_RETURN 														{ $$ = template("return result");											}/*Return*/
-		 | functionCall														{ $$ = template("%s",$1); 													}/*Function call*/
+		 | KW_REPEAT special_body KW_UNTIL expression  				    	{ $$ = template("do%swhile( !(%s) );",$2,$4); 								}/*Repeat*/
+		 | IDENT ':'  														{ $$ = template("%s:\n",$1);												}/*Empty Label*/
+		 | IDENT ':' commands												{ $$ = template("%s:\n%s",$1,$3);											}/*Label with statements*/		
+		 | KW_GOTO IDENT													{ $$ = template("goto %s;",$2);												}/*Goto statement*/
+		 | KW_RETURN 														{ $$ = template("return result;");											}/*Return*/
+		 | functionCall														{ $$ = template("%s;",$1); 													}/*Function call*/
 		 ;
 
-		 variableAssignment: IDENT complexBracketsL OP_ASSIGN expression	{ $$ = template("%s%s = %s",$1,$2,$4);										}/*Variable assignment*/
+		 variableAssignment: IDENT complexBracketsL OP_ASSIGN expression	{ $$ = template("%s%s = %s;",$1,$2,$4);										}/*Variable assignment*/
 				           ;
 
 		 ifStatementMiddle : %empty 										{ $$ = ""; 	    							 }

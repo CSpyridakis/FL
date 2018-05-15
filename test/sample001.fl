@@ -22,16 +22,16 @@ begin
 
 	f:
 	for z:=x to y do begin
-		if z=5 then
+		if z=5 then begin
 			printf("HERE YOU ARE %d\n",nothing())
-
+		end
 	end;
 
 	w:
-	while x<>30 do
+	while x<>30 do begin
 		x:=x+1;
 		printf("X=%d\n",x)
-	;
+	end;
 
 	goto en;
 

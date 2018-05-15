@@ -78,5 +78,5 @@ char* get_typedef(char* name);
 
 
 char * idenName(char * s);
-
+char * replaceNL(const char * srcStr);
 #endif

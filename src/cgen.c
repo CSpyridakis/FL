@@ -388,5 +388,27 @@ char * idenName(char * s){
 	return subStringFromSeparator(s);
 }
 
+char * replaceNL(const char * srcStr){
 
+	int srcStrL     = strlen(srcStr)-1;
+	int found=-1;
+	int foundL [10240]; 
 
+	for(int i=0;i<=srcStrL;i++)
+		if(srcStr[i] == '\n')
+			foundL[++found]=i;
+			
+	char * ret=(char*)malloc(sizeof(char)*srcStrL+found+1);
+	
+	for(int i=0, start=0;i<found+1;i++){
+		for(int j=0;j<foundL[i]-start;j++){
+			ret[start+i+j]=srcStr[start+j];
+		}
+		ret[start+i+foundL[i]-start]='\n';
+		ret[start+i+foundL[i]-start+1]='\t';
+
+		start=foundL[i]+1;
+	}
+
+	return ret;
+}
