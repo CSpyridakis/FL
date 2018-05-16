@@ -290,6 +290,7 @@ commands : basicCommand
 fun_proc_comm:variableAssignment
 		 | KW_RESULT OP_ASSIGN expression 									{ $$ = template("result = %s;",$3);    										}/*Result assignment*/
 		 | KW_IF expression KW_THEN special_body ifStatementMiddle			{ $$ = template("if(%s)%s%s",$2,$4,$5); 									}/*If statement*/
+		 | KW_IF expression KW_THEN special_body ifStatementMiddle KW_ELSE special_body { $$ = template("if(%s)%s%selse{\n%s\n}",$2,$4,$5,$7); 									}/*If statement*/
 		 | KW_FOR variableAssignment KW_TO expression KW_DO special_body 	{ $$ = template("for(%s %s < %s; %s++)%s",$2,idenName($2),$4,idenName($2),$6);	}/*For loop ++*/
 		 | KW_FOR variableAssignment KW_DOWNTO expression KW_DO special_body{ $$ = template("for(%s %s > %s; %s--)%s",$2,idenName($2),$4,idenName($2),$6); }/*For loop --*/
 		 | KW_WHILE expression KW_DO special_body							{ $$ = template("while(%s)%s",$2,$4); 		 								}/*While loop*/
@@ -319,7 +320,6 @@ basicCommand : variableAssignment
 
 		 ifStatementMiddle : %empty 										{ $$ = ""; 	    							 }
 	 	 				   | KW_ELSE KW_IF expression KW_THEN special_body ifStatementMiddle  { $$ = template("else if(%s)%s%s",$3,$5,$6); }
-		    			   | KW_ELSE special_body 							{ $$ = template("else%s",$2); 				 }
 						   ; 
 
 %%

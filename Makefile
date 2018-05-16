@@ -57,6 +57,7 @@ bison_compile:
 	$(BISON) -d $(PATH_TO_SRC)ptucc_parser.y
 
 src_compile:
+	mkdir -p bin
 	#TODO MAKEFILE FIX
 	mv ptucc_lex.c ./bin/
 	mv ptucc_parser.tab.c ./bin/
