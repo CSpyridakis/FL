@@ -66,15 +66,15 @@ extern int line_num;
 %token <crepr> OP_CAST_CHAR
 
 	/*TYPE*/
-%type <crepr> program_decl d decl type_decl init_type_decl type_assign type_type_assign  statements statement_list param_list 
-%type <crepr> func_decl proc_decl func_def proc_def def subprogram_def subprogram_decl func_body proc_body
-%type <crepr> de decl_kind statement var_decl var_type_assign proc_call arguments bracket_list init_var_decl param_specifier
-%type <crepr> type arglist var_list compound_type var_assign brackets
+%type <crepr> program_decl d decl type_decl init_type_decl type_assign type_type_assign  statements param_list 
+%type <crepr> func_decl proc_decl func_def proc_def def subprogram_def subprogram_decl  
+%type <crepr> de decl_kind  var_decl var_type_assign bracket_list init_var_decl param_specifier
+%type <crepr> type var_list compound_type var_assign brackets
 
-%type <crepr> body special_body main_body 
+%type <crepr> body  special_body
 
 	/* Expressions' types */
-%type <crepr> expression complexBracketsL functionCall arglistCall casting 
+%type <crepr> expression complexBracketsL functionCall arglistCall  
 
 	/* Commands */
 %type <crepr> commands basicCommand variableAssignment ifStatementMiddle
@@ -277,16 +277,9 @@ expression : POSINT 							{ $$ = template("%s",$1); 		   }
 		   | expression OP_AND  expression 		{ $$ = template("%s && %s",$1,$3); }
 		   | expression OP_OR   expression 		{ $$ = template("%s || %s",$1,$3); }
 		   | '(' expression ')'					{ $$ = template("(%s)",$2);    	   }
-		   | expression '(' expression ')'		{ $$ = template("%s (%s)",$1,$3);  }
-		   		
+		   | expression '(' expression ')'		{ $$ = template("%s (%s)",$1,$3);  }		
 		   ;
 
-			casting: '(' KW_INT ')' expression	{ $$ = template("(int)%s",$4);     }
-				   | '(' KW_CHAR ')' expression	{ $$ = template("(char)%s",$4);    }
-				   | '(' KW_REAL ')' expression	{ $$ = template("(float)%s",$4);   }
-				   | '(' KW_BOOLEAN ')' expression{ $$ = template("(int)%s",$4);   }
-				   | '(' IDENT ')'  expression	{ $$ = template("(%s)%s",$2,$4);   }
-				   ;
 
 			complexBracketsL : %empty  										{ $$ = ""; 						  }
 							 | '[' expression ']'							{ $$ = template("[%s]", $2); 	  }
