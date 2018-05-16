@@ -48,7 +48,7 @@ C_SRC= $(C_SOURCES) $(C_GEN)
 
 C_OBJECTS=$(C_SRC:.c=.o)
 
-all: flex_compile bison_compile src_compile
+all: bison_compile flex_compile src_compile
 
 flex_compile:
 	$(FLEX) -o ptucc_lex.c $(PATH_TO_SRC)ptucc_lex.l

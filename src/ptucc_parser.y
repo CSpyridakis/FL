@@ -286,12 +286,13 @@ expression : POSINT 							{ $$ = template("%s",$1); 		   }
 							 | complexBracketsL '[' expression ']'			{ $$ = template("%s[%s]",$1,$3);  }
 							 ; 
 
-			functionCall : IDENT '(' ')' 									{ $$ = template("%s()",$1);  	  }
-						 | IDENT '(' arglistCall ')' 						{ $$ = template("%s(%s)",$1,$3);  }
+			functionCall : IDENT '(' arglistCall ')' 						{ $$ = template("%s(%s)",$1,$3);  }
 						 ;
 
-						arglistCall: expression								{ $$ = template("%s",$1);		  }
+						arglistCall: %empty 								{ $$ = ""; 	    				  }
+							   | expression								    { $$ = template("%s",$1);		  }
 			      			   | arglistCall ',' expression 				{ $$ = template("%s,%s", $1, $3); }
+			      			   
 			       			   ;	
 
 commands : basicCommand
