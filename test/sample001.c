@@ -7,19 +7,23 @@ int x, y, z;
 typedef char* something;
 typedef int (*a_func)(int x);
 typedef void (*a_proc)(char* a, char*  b, char*  g);
+
 int nothing(){
- 
 result = 10;
+result = 10;
+result = 10;
+result = 10;
+result = 10;
+if(a == 2)
 return result;
 return result;
 }
 
-
 int main() {
  
 be:
-x = 1 + ((2341) + ((23) / 4.2E-1)) / 34;
-y = 10;
+x = 1 && ((2341) + ((23) || 4.2E-1)) / 34;
+y = uygfkuyguyf + 4;
 f:
 for(z = x; z < y; z++)
 {
@@ -45,6 +49,6 @@ r:
 do;while( !(1 != 1) );
 en:
 printf("Exit");
-return result;
+return 0;
 }
  

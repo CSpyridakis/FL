@@ -22,44 +22,44 @@ extern int line_num;
 %token <crepr> POSINT 
 %token <crepr> REAL 
 %token <crepr> STRING
-%token <crepr> KW_BOOLEAN
-%token <crepr> KW_REAL
-%token <crepr> KW_CHAR
-%token <crepr> KW_INT
-%token <crepr> KW_VAR
-%token <crepr> KW_PROGRAM 
-%token <crepr> KW_BEGIN 
-%token <crepr> KW_END
-%token <crepr> KW_FUNC
-%token <crepr> KW_PROC
-%token <crepr> KW_RESULT
-%token <crepr> KW_ARRAY
-%token <crepr> KW_DO
-%token <crepr> KW_GOTO
-%token <crepr> KW_RETURN
-%token <crepr> KW_ELSE
-%token <crepr> KW_IF;
-%token <crepr> KW_OF
-%token <crepr> KW_THEN
-%token <crepr> KW_FOR
-%token <crepr> KW_REPEAT
-%token <crepr> KW_UNTIL
-%token <crepr> KW_WHILE
-%token <crepr> KW_TO
-%token <crepr> KW_DOWNTO
-%token <crepr> KW_TRUE
-%token <crepr> KW_FALSE
-%token <crepr> KW_TYPE
-%token <crepr> OP_EQ
-%token <crepr> OP_INEQ
-%token <crepr> OP_LT
-%token <crepr> OP_LTE
-%token <crepr> OP_GT
-%token <crepr> OP_GTE
-%token <crepr> OP_AND
-%token <crepr> OP_OR
-%token <crepr> OP_NOT
-%token <crepr> OP_ASSIGN
+%token KW_BOOLEAN
+%token KW_REAL
+%token KW_CHAR
+%token KW_INT
+%token KW_VAR
+%token KW_PROGRAM 
+%token KW_BEGIN 
+%token KW_END
+%token KW_FUNC
+%token KW_PROC
+%token KW_RESULT
+%token KW_ARRAY
+%token KW_DO
+%token KW_GOTO
+%token KW_RETURN
+%token KW_ELSE
+%token KW_IF
+%token KW_OF
+%token KW_THEN
+%token KW_FOR
+%token KW_REPEAT
+%token KW_UNTIL
+%token KW_WHILE
+%token KW_TO
+%token KW_DOWNTO
+%token KW_TRUE
+%token KW_FALSE
+%token KW_TYPE
+%token OP_EQ
+%token OP_INEQ
+%token OP_LT
+%token OP_LTE
+%token OP_GT
+%token OP_GTE
+%token OP_AND
+%token OP_OR
+%token OP_NOT
+%token OP_ASSIGN
 %token <crepr> OP_CAST_INT
 %token <crepr> OP_CAST_REAL
 %token <crepr> OP_CAST_BOOL
@@ -67,23 +67,23 @@ extern int line_num;
 
 	/*TYPE*/
 %type <crepr> program_decl d decl type_decl init_type_decl type_assign type_type_assign  statements param_list 
-%type <crepr> func_decl proc_decl func_def proc_def def subprogram_def subprogram_decl  
+%type <crepr> func_decl proc_decl   
 %type <crepr> de decl_kind  var_decl var_type_assign bracket_list init_var_decl param_specifier
 %type <crepr> type var_list compound_type var_assign brackets
 
-%type <crepr> body  special_body
+%type <crepr> main_body special_body
 
 	/* Expressions' types */
 %type <crepr> expression complexBracketsL functionCall arglistCall  
 
 	/* Commands */
-%type <crepr> commands basicCommand variableAssignment ifStatementMiddle
+%type <crepr> commands basicCommand variableAssignment ifStatementMiddle fun_proc_comm func_proc_statements
 
 %left OP_NOT '*' '/' '+' '-' OP_EQ OP_INEQ OP_LT OP_LTE OP_GT OP_GTE OP_AND OP_OR
 
 %%
 
-program: program_decl d body '.'   		
+program: program_decl d main_body '.'   		
 { 
 	/* We have a successful parse! 
 		Check for any errors and generate output. 
@@ -104,22 +104,10 @@ d: de   											{ $$ = template("%s", $1); 			}
  | d de 											{ $$ = template("%s%s", $1, $2 ); 	}
  ;
 
-de: decl  											{ $$ = template("%s", $1); 			}
-  | def   											{ $$ = template("%s", $1); 			} 
-  ;  	
-
-def: subprogram_def									{ $$ = template("%s", $1); 			}
-   ;
-
-subprogram_def: func_def 							{ $$ = template("%s\n", $1); 		}
-	      	  | proc_def 							{ $$ = template("%s\n", $1); 		}
-	      	  ;
-
-func_def: func_decl ';' body ';' 					{ $$ = template("%s%s", $1, $3); 	}
-		;
-
-proc_def: proc_decl ';' body ';' 					{ $$ = template("%s%s", $1, $3); 	}
-		;
+de: decl  													   			{ $$ = template("%s", $1); 			}
+  | func_decl ';' KW_BEGIN func_proc_statements KW_RETURN KW_END ';' 	{ $$ = template("\n%s{\n%s\nreturn result;\n}\n",$1, $4); }
+  | proc_decl ';' KW_BEGIN func_proc_statements KW_END  ';'			   	{ $$ = template("\n%s{\n%s\n}\n",$1, $4); } 
+  ;	
 
 decl: decl_kind  									{ $$ = template("%s",$1); 			}
     | decl decl_kind 								{ $$ = template("%s%s", $1, $2 ); 	}
@@ -174,10 +162,6 @@ var_type_assign: var_list ':' compound_type ';'  	{
 													}
 	       		; 
 
-subprogram_decl: func_decl 							{ $$ = template("%s", $1); 			}
-	       | proc_decl 								{ $$ = template("%s", $1); 			}
-	       ; 
-
 func_decl: KW_FUNC '(' param_list ')' ':' compound_type			{   char* C_ct = make_C_comp_type($6); 
 																	$$ = template("%s (*FUNCTION)(%s)", C_ct, $3); }
 		 | KW_FUNC IDENT '(' param_list ')' ':' compound_type 	{ 
@@ -214,7 +198,8 @@ var_list: IDENT
         ; 
 
 compound_type: type 								{ $$ = template("%s", $1); 			}
-	     	 | subprogram_decl 						{ $$ = template("%s", $1); 			}
+	     	 | func_decl 							{ $$ = template("%s", $1); 			}
+	       	 | proc_decl 								{ $$ = template("%s", $1); 			}
 	     	 | KW_ARRAY bracket_list KW_OF compound_type { $$ = make_parsable_comp_type($4, $2); }
 	  		 ;
 
@@ -242,13 +227,18 @@ brackets: %empty  	 								{ $$ = ""; 							}
 	1) Tabs fix
 */
 
-body : KW_BEGIN statements KW_END   			{ $$ = template("{\n \n%sreturn result;\n}\n", $2); }
+main_body : KW_BEGIN statements KW_END   		{ $$ = template("{\n \n%sreturn 0;\n}\n", $2); }
 		  ;
 
 special_body: %empty { $$ = ";"; }
 			| basicCommand 						{ $$ = template("\n%s", $1); 			}
 			| KW_BEGIN statements KW_END 		{ $$ = template("\n{\n%s\n}\n", $2); }
 		    ;
+
+		func_proc_statements : %empty		    						{ $$ = ""; 								}
+							 | fun_proc_comm   ';' 						{ $$ = template("%s", $1); 			}
+							 | func_proc_statements fun_proc_comm  ';'  { $$ = template("%s\n%s", $1,$2); 		}
+							 ;
 
 		statements: %empty				       	{ $$ = ""; 								}
 				  | commands		   			{ $$ = template("%s\n", $1); 			}
@@ -289,7 +279,7 @@ expression : POSINT 							{ $$ = template("%s",$1); 		   }
 			functionCall : IDENT '(' arglistCall ')' 						{ $$ = template("%s(%s)",$1,$3);  }
 						 ;
 
-						arglistCall: %empty 								{ $$ = ""; 	    				  }
+						arglistCall: %empty 								{ $$ = ""; 	    				}
 							   | expression								    { $$ = template("%s",$1);		  }
 			      			   | arglistCall ',' expression 				{ $$ = template("%s,%s", $1, $3); }
 			      			   
@@ -298,6 +288,20 @@ expression : POSINT 							{ $$ = template("%s",$1); 		   }
 commands : basicCommand
 		 | commands ';' basicCommand 										{ $$ = template("%s\n%s",$1,$3);  }
 		 ;
+
+
+fun_proc_comm:variableAssignment
+		 | KW_RESULT OP_ASSIGN expression 									{ $$ = template("result = %s;",$3);    										}/*Result assignment*/
+		 | KW_IF expression KW_THEN special_body ifStatementMiddle			{ $$ = template("if(%s)%s%s",$2,$4,$5); 									}/*If statement*/
+		 | KW_FOR variableAssignment KW_TO expression KW_DO special_body 	{ $$ = template("for(%s %s < %s; %s++)%s",$2,idenName($2),$4,idenName($2),$6);	}/*For loop ++*/
+		 | KW_FOR variableAssignment KW_DOWNTO expression KW_DO special_body{ $$ = template("for(%s %s > %s; %s--)%s",$2,idenName($2),$4,idenName($2),$6); }/*For loop --*/
+		 | KW_WHILE expression KW_DO special_body							{ $$ = template("while(%s)%s",$2,$4); 		 								}/*While loop*/
+		 | KW_REPEAT special_body KW_UNTIL expression  				    	{ $$ = template("do%swhile( !(%s) );",$2,$4); 								}/*Repeat*/
+		 | IDENT ':'  														{ $$ = template("%s:\n",$1);												}/*Empty Label*/
+		 | IDENT ':' commands												{ $$ = template("%s:\n%s",$1,$3);											}/*Label with statements*/		
+		 | KW_GOTO IDENT													{ $$ = template("goto %s;",$2);												}/*Goto statement*/
+		 | functionCall														{ $$ = template("%s;",$1); 	}		
+		 ; 
 
 basicCommand : variableAssignment
 		 | KW_RESULT OP_ASSIGN expression 									{ $$ = template("result = %s;",$3);    										}/*Result assignment*/

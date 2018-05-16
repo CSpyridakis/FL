@@ -631,7 +631,7 @@ char* get_macro(char* name);
 
 /* Destination of debug prints.	*/
 #define destPrint stderr
-#define DEBUG 0
+#define DEBUG 1
 /*	BASIC TYPES	 */
 
 
