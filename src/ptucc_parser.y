@@ -71,7 +71,7 @@ extern int line_num;
 %type <crepr> de decl_kind  var_decl var_type_assign bracket_list init_var_decl param_specifier
 %type <crepr> type var_list compound_type var_assign brackets
 
-%type <crepr> main_body special_body
+%type <crepr> special_body
 
 	/* Expressions' types */
 %type <crepr> expression complexBracketsL functionCall arglistCall  
@@ -83,7 +83,7 @@ extern int line_num;
 
 %%
 
-program: program_decl d main_body '.'   		
+program: program_decl d KW_BEGIN statements KW_END '.'
 { 
 	/* We have a successful parse! 
 		Check for any errors and generate output. 
@@ -92,15 +92,15 @@ program: program_decl d main_body '.'
 		puts(c_prologue);
 		printf("/* program  %s */ \n\n", $1);
 		printf("%s\n", $2);		
-		printf("int main() %s \n", $3);
-		
+		printf("int main() {\n\n%s\n\treturn 0;\n}\n",$4);
 	}
 };
 
 program_decl : KW_PROGRAM IDENT ';'  				{ $$ = $2; 							}
 			 ;
 
-d: de   											{ $$ = template("%s", $1); 			}
+d: %empty 											{ $$ = ""; 							}
+ | de   											{ $$ = template("%s", $1); 			}
  | d de 											{ $$ = template("%s%s", $1, $2 ); 	}
  ;
 
@@ -226,9 +226,6 @@ brackets: %empty  	 								{ $$ = ""; 							}
 	--------------
 	1) Tabs fix
 */
-
-main_body : KW_BEGIN statements KW_END   		{ $$ = template("{\n \n%sreturn 0;\n}\n", $2); }
-		  ;
 
 special_body: %empty { $$ = ";"; }
 			| basicCommand 						{ $$ = template("\n%s", $1); 			}

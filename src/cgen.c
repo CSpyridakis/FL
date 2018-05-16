@@ -9,7 +9,7 @@
 
 extern int line_num;
 int yyerror_count = 0;
-const char* c_prologue = "#include \"ptuclib.h\"\n""\n";
+const char* c_prologue = "#include <stdio.h>\n#include <stdlib.h>\n";
 
 void ssopen(sstream* S)
 {

@@ -68,3 +68,4 @@ clean:
 	$(RM) ./bin/*.*
 	$(RM) ./bin/fl_compiler
 	$(RM) ./test/*.c
+	$(RM) ./test/samples/*.c
