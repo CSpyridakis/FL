@@ -4,6 +4,6 @@
 
 3. Fix errors for samples 4,5,6
 
-4. Replace '' to "" in strings (Segmentation fault in C)
+4. Replace '' to "" in strings (Segmentation fault in C) DONE
 
 5. Replace \n in blocks with \n\t 

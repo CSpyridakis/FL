@@ -159,7 +159,7 @@ expression : POSINT 							{ $$ = template("%s",$1); 		   }
 							 ; 
 
 			functionCall : IDENT '(' arglistCall ')' 						{ 
-
+																				replaceQInSTR($3);
 																				if (strcmp($1, "readString")==0){
 																					$$ = template("gets()");
 																				}else if (strcmp($1, "readInteger")==0){
@@ -169,9 +169,9 @@ expression : POSINT 							{ $$ = template("%s",$1); 		   }
 																				}else if (strcmp($1, "writeString")==0){
 																					$$ = template("puts(%s)",$3);
 																				}else if (strcmp($1, "writeInteger")==0){
-																					$$ = template("printf(\"%d\",%s)",$3);
+																					$$ = template("printf(\"%%d\",%s)",$3);
 																				}else if (strcmp($1, "writeReal")==0){
-																					$$ = template("printf(\"%f\",%s)",$3);
+																					$$ = template("printf(\"%%f\",%s)",$3);
 																				}else{
 																					$$ = template("%s(%s)",$1,$3);  
 																				}

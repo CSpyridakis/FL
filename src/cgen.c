@@ -429,6 +429,13 @@ char * replaceNL(const char * srcStr){
 	return ret;
 }
 
+void replaceQInSTR(char * srcStr){
+	int srcStrL= strlen(srcStr)-1;
+	for(int i=0;i<=srcStrL;i++)
+		if(srcStr[i] == '\'')
+			srcStr[i]='\"';
+}
+
 /*
 char * casting(){
     		   
