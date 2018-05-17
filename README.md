@@ -3,10 +3,8 @@
 
 ## Build:
 
-  * touch .depend
-  
-  * make (if you need only to make executables)
+  * make
 
-## Test:
+## Use Trans-compiler:
 
-  * ./fl file.fl
+  * ./fl path_to_file.fl
