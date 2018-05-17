@@ -38,11 +38,8 @@ DECIMAL ("."{NUMBER})|({NUMBER}("."{NUMBER}?)?)
 REAL    {DECIMAL}([eE][+-]?{NUMBER})?
 STRING  '[^']*'|\"[^\"]*\"
 
-
 %x comment
 %x macro
-
-
 
 /*	Flex Rules	*/
 %%

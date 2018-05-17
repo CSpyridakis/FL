@@ -47,30 +47,30 @@ program: KW_PROGRAM IDENT ';' declerations KW_BEGIN statements KW_END '.'
 	}
 };
 
-declerations: %empty 														{ $$ = ""; 							}
-			| declarationL 													{ $$ = template("%s", $1);		 	}
+declerations: %empty 															{ $$ = ""; 							}
+			| declarationL 														{ $$ = template("%s", $1);		 	}
  			;
 
-declarationL: basicDecleration 												{ $$ = template("%s", $1);		 	}
-			| declarationL  basicDecleration 								{ $$ = template("%s%s", $1, $2); 	}
- 			;
+declarationL: basicDecleration 													{ $$ = template("%s", $1);		 	}
+			| declarationL  basicDecleration 									{ $$ = template("%s%s", $1, $2); 	}
+ 			;	
 
-basicDecleration: KW_TYPE typelist 	';'										{ $$ = template("%s", $2);		 	}
- 				| KW_VAR varlist   	';'										{ $$ = template("%s", $2);		 	}
- 				| func_decl ';' declerations KW_BEGIN func_proc_statements KW_RETURN KW_END ';'{ $$ = template("\n%s{\n%s\n%sreturn result;\n}\n",$1,$3,$5); }
+basicDecleration: KW_TYPE typelist 	';'														   { $$ = template("%s\n", $2);		 	}
+ 				| KW_VAR varlist   	';'														   { $$ = template("%s\n", $2);		 	}
+ 				| KW_FUNC IDENT '(' param_list ')' ':' compound_type ';' declerations KW_BEGIN func_proc_statements KW_RETURN KW_END ';' { $$ = template("\n%s %s(%s){\n%s result;\n%s\n%s\nreturn result;\n}\n",$7,$2,$4,$7,$9,$11); }
  				| proc_decl ';' declerations KW_BEGIN func_proc_statements KW_END  			';'{ $$ = template("\n%s{\n%s\n%s\n}\n",$1,$3,$5); } 
 				;
 										
-				typelist : IDENT OP_EQ compound_type						{ $$ = template("typedef %s %s",$1,$3); }
-						 | typelist ';' IDENT OP_EQ compound_type			{ $$ = template("%s, %s", $1, $3); }
+				typelist : IDENT OP_EQ compound_type							{ $$ = template("typedef %s %s",$1,$3); }
+						 | typelist ';' IDENT OP_EQ compound_type				{ $$ = template("%s\ntypedef %s %s", $1, $3, $5); }
 						 ;
 
-				varlist : idents ':'  compound_type							{ $$ = template("%s, %s", $1, $3); }
-						| varlist ';' idents ':' compound_type				{ $$ = template("%s, %s", $1, $3); }
+				varlist : idents ':'  compound_type								{ $$ = template("%s %s;", $3, $1); }
+						| varlist ';' idents ':' compound_type					{ $$ = template("%s\n%s %s;", $1, $5, $3); }
 						;
 
-						idents : IDENT 										{ $$ = template("%s", $1);		 	}
-						       | idents ',' IDENT 							{ $$ = template("%s, %s", $1, $3); }
+						idents : IDENT 											{ $$ = template("%s", $1);		 	}
+						       | idents ',' IDENT 								{ $$ = template("%s, %s", $1, $3); }
 						       ; 
 				       
 				func_decl : KW_FUNC '(' param_list ')' ':' compound_type		{ char* C_ct = make_C_comp_type($6);  $$ = template("%s (*FUNCTION)(%s)", C_ct, $3); }
@@ -81,9 +81,9 @@ basicDecleration: KW_TYPE typelist 	';'										{ $$ = template("%s", $2);		 	}
 						  | KW_PROC IDENT '(' param_list ')'  					{ $$ = template("void %s(%s)", $2, $4 ); }
 				          ;
 
-				func_proc_statements : %empty		    						{ $$ = ""; 								}
-							 		 | fun_proc_comm   ';' 						{ $$ = template("%s", $1); 				}
-							 		 | func_proc_statements fun_proc_comm  ';'  { $$ = template("%s\n%s", $1,$2); 		}
+				func_proc_statements : %empty		    						{ $$ = ""; 							}
+							 		 | fun_proc_comm   ';' 						{ $$ = template("%s", $1); 			}
+							 		 | func_proc_statements fun_proc_comm  ';'  { $$ = template("%s\n%s", $1,$2); 	}
 									 ;
 
 				        param_list: param_specifier	 							{ $$ = template("%s",$1); 			}
@@ -158,7 +158,24 @@ expression : POSINT 							{ $$ = template("%s",$1); 		   }
 							 | complexBracketsL '[' expression ']'			{ $$ = template("%s[%s]",$1,$3);  }
 							 ; 
 
-			functionCall : IDENT '(' arglistCall ')' 						{ $$ = template("%s(%s)",$1,$3);  }
+			functionCall : IDENT '(' arglistCall ')' 						{ 
+
+																				if (strcmp($1, "readString")==0){
+																					$$ = template("gets()");
+																				}else if (strcmp($1, "readInteger")==0){
+																					$$ = template("atoi(gets())");
+																				}else if (strcmp($1, "readReal")==0){
+																					$$ = template("atof(gets())");
+																				}else if (strcmp($1, "writeString")==0){
+																					$$ = template("puts(%s)",$3);
+																				}else if (strcmp($1, "writeInteger")==0){
+																					$$ = template("printf(\"%d\",%s)",$3);
+																				}else if (strcmp($1, "writeReal")==0){
+																					$$ = template("printf(\"%f\",%s)",$3);
+																				}else{
+																					$$ = template("%s(%s)",$1,$3);  
+																				}
+																			}
 						 ;
 
 						arglistCall: %empty 								{ $$ = ""; 	    				}

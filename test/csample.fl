@@ -4,15 +4,31 @@
 
 program foo;
 
-var 
-	x,y,z: integer;
-
 type
-	something = array of char;
+	arrayOfChar = array of char;
 	a_func = function(x:integer): boolean;
 	a_proc = procedure(a, b, g: array of char);
 
+var 
+	x,y,z: varArrayOfChar;
+	a1,a2,a3: a_func;
+
+type
+	arrayOfInt = array [3] of int;
+	arrayOfArray = array [3] of arrayOfInt;
+
+var 
+	b,b2,b3: arrayOfInt ;
+	c1: array of arrayOfInt;
+	d1,d2,d3: array [3] of arrayOfInt;
+	
+
 function nothing(): integer;
+var 
+	fb,fb2,fb3: arrayOfInt ;
+	fc1: array of arrayOfInt;
+	fd1,fd2,fd3: array [3] of arrayOfInt;
+
 begin
 	result := 10;
 	result := 10;

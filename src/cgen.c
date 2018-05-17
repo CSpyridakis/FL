@@ -428,6 +428,7 @@ char * replaceNL(const char * srcStr){
 
 	return ret;
 }
+
 /*
 char * casting(){
     		   
