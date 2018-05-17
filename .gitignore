@@ -57,5 +57,6 @@ CMakeLists.txt
 cmake-build-debug/
 
 #Executable
+bin/
 mylexer
 lex.yy.c
