@@ -24,11 +24,11 @@ extern int line_num;
 %token <crepr> IDENT POSINT REAL STRING OP_CAST_INT OP_CAST_REAL OP_CAST_BOOL OP_CAST_CHAR
 
 	/*TYPE*/
-%type <crepr> statements params func_decl proc_decl bracket_list compound_type brackets funcStatements procStatements
-%type <crepr> declerations declarationL basicDecleration typelist varlist idents dtype paramsList FunProcStatementsL
-
+%type <crepr> statements params func_decl proc_decl bracket_list compound_type brackets funcStatements procStatements complexBracketsL
+%type <crepr> arglist declerations declarationL basicDecleration typelist varlist idents dtype paramsList FunProcStatementsL special_body_list
+%type <crepr> basicexpr compoundexpr
 	/* Expressions' types */
-%type <crepr> expression complexBracketsL functionCall arglistCall  
+%type <crepr> expression complexBrackets functionCall arglistCall add_expr
 
 	/* Commands' types */
 %type <crepr> special_body commands basicCommand variableAssignment ifStatementMiddle fun_proc_comm
@@ -164,22 +164,31 @@ statements: %empty				       	{ $$ = ""; 								}
 		  ;
 
 special_body: %empty { $$ = ";"; }
-			| basicCommand 						{ $$ = template("\n%s", $1); 			}
-			| KW_BEGIN statements KW_END 		{ $$ = template("\n{\n%s\n}\n", $2); }
+			| special_body_list { $$ = template("%s", $1); }
 		    ;
 
-expression : POSINT 							{ $$ = template("%s",$1); 		   }
+special_body_list: basicCommand 					{ $$ = template("\n%s", $1); }
+				 | KW_BEGIN statements KW_END 		{ $$ = template("\n{\n%s\n}\n", $2); }
+				 ;
+
+expression : basicexpr	{ $$ = template("%s",$1); }
+		   | compoundexpr	{ $$ = template("%s",$1); }
+		   ;
+
+basicexpr: POSINT 							{ $$ = template("%s",$1); }
 		   | REAL								{ $$ = template("%s",$1); 		   }					
 		   | STRING 							{ $$ = template("%s",$1); 		   } /*TODO : Change this function*/
-		   | IDENT complexBracketsL 			{ $$ = template("%s%s",$1,$2); 	   }
+		   | IDENT complexBrackets 			{ $$ = template("%s%s",$1,$2); 	   }
 		   | KW_TRUE 							{ $$ = template("1");	 		   }
 		   | KW_FALSE							{ $$ = template("0"); 			   }
 		   | KW_RESULT							{ $$ = template("result"); 		   }
 		   | functionCall						{ $$ = template("%s",$1); 		   }
-		   | '+' expression 					{ $$ = template("+%s",$2); 		   }
+		   ;
+
+compoundexpr: '+' expression 					{ $$ = template("+%s",$2); 		   }
 		   | '-' expression 					{ $$ = template("-%s",$2); 		   }  
 		   | OP_NOT expression 	   				{ $$ = template("!%s",$2);  	   }
-		   | expression '+' expression 			{ $$ = template("%s + %s",$1,$3);  }
+		   | add_expr			 				{ $$ = template("%s",$1);  }
 		   | expression '-' expression 			{ $$ = template("%s - %s",$1,$3);  }
 		   | expression '/' expression 			{ $$ = template("%s / %s",$1,$3);  }
 		   | expression '*' expression 			{ $$ = template("%s * %s",$1,$3);  }
@@ -197,10 +206,17 @@ expression : POSINT 							{ $$ = template("%s",$1); 		   }
 		   /*| '(' dtype ')' expression			{ $$ = template("(%s)%s",$2,$4);   }*/
 		   ;
 
-			complexBracketsL : %empty  										{ $$ = ""; 						  }
-							 | '[' expression ']'							{ $$ = template("[%s]", $2); 	  }
-							 | complexBracketsL '[' expression ']'			{ $$ = template("%s[%s]",$1,$3);  }
-							 ; 
+add_expr: expression '+' expression 			{ $$ = template("%s + %s",$1,$3);  }
+
+
+
+			complexBrackets : %empty  										{ $$ = ""; }
+							| complexBracketsL								{ $$ = template("%s", $1); }
+							; 
+
+			complexBracketsL:  '[' expression ']'							{ $$ = template("[%s]", $2); }
+							| complexBracketsL '[' expression ']'			{ $$ = template("%s[%s]",$1,$3);  }
+							; 
 
 			functionCall : IDENT '(' arglistCall ')' 						{ 
 																				replaceQInSTR($3);
@@ -222,29 +238,30 @@ expression : POSINT 							{ $$ = template("%s",$1); 		   }
 																			}
 						 ;
 
-						arglistCall: %empty 								{ $$ = ""; 	    				}
-							   | expression								    { $$ = template("%s",$1);		  }
-			      			   | arglistCall ',' expression 				{ $$ = template("%s,%s", $1, $3); }
-			      			   
-			       			   ;	
+						arglistCall: %empty 	{ $$ = ""; }
+							       |  arglist   { $$ = template("%s",$1);}
+							       ;
+
+					    arglist : expression					{ $$ = template("%s",$1);}
+			      			    | arglist ',' expression 		{ $$ = template("%s,%s", $1, $3); }
+			      			    ;	
 
 commands : basicCommand
 		 | commands ';' basicCommand 										{ $$ = template("%s\n%s",$1,$3);  }
 		 ;
 
-fun_proc_comm:variableAssignment
-		 | KW_RESULT OP_ASSIGN expression 									{ $$ = template("result = %s;",$3);    										}/*Result assignment*/
-		 | KW_IF expression KW_THEN special_body ifStatementMiddle			{ $$ = template("if(%s)%s%s",$2,$4,$5); 									}/*If statement*/
-		 | KW_IF expression KW_THEN special_body ifStatementMiddle KW_ELSE special_body { $$ = template("if(%s)%s%selse{\n%s\n}",$2,$4,$5,$7); 									}/*If statement*/
-		 | KW_FOR variableAssignment KW_TO expression KW_DO special_body 	{ $$ = template("for(%s %s < %s; %s++)%s",$2,idenName($2),$4,idenName($2),$6);	}/*For loop ++*/
-		 | KW_FOR variableAssignment KW_DOWNTO expression KW_DO special_body{ $$ = template("for(%s %s > %s; %s--)%s",$2,idenName($2),$4,idenName($2),$6); }/*For loop --*/
-		 | KW_WHILE expression KW_DO special_body							{ $$ = template("while(%s)%s",$2,$4); 		 								}/*While loop*/
-		 | KW_REPEAT special_body KW_UNTIL expression  				    	{ $$ = template("do%swhile( !(%s) );",$2,$4); 								}/*Repeat*/
-		 | IDENT ':'  														{ $$ = template("%s:\n",$1);												}/*Empty Label*/
-		 | IDENT ':' commands												{ $$ = template("%s:\n%s",$1,$3);											}/*Label with statements*/		
-		 | KW_GOTO IDENT													{ $$ = template("goto %s;",$2);												}/*Goto statement*/
-		 | functionCall														{ $$ = template("%s;",$1); 	}		
-		 ; 
+fun_proc_comm: variableAssignment
+			 | KW_RESULT OP_ASSIGN expression 									{ $$ = template("result = %s;",$3);    										}/*Result assignment*/
+			 | KW_IF expression KW_THEN special_body ifStatementMiddle			{ $$ = template("if(%s)%s%s",$2,$4,$5); 									}/*If statement*/
+			 | KW_IF expression KW_THEN special_body ifStatementMiddle KW_ELSE special_body { $$ = template("if(%s)%s%selse{\n%s\n}",$2,$4,$5,$7); 									}/*If statement*/
+			 | KW_FOR variableAssignment KW_TO expression KW_DO special_body 	{ $$ = template("for(%s %s < %s; %s++)%s",$2,idenName($2),$4,idenName($2),$6);	}/*For loop ++*/
+			 | KW_FOR variableAssignment KW_DOWNTO expression KW_DO special_body{ $$ = template("for(%s %s > %s; %s--)%s",$2,idenName($2),$4,idenName($2),$6); }/*For loop --*/
+			 | KW_WHILE expression KW_DO special_body							{ $$ = template("while(%s)%s",$2,$4); 		 								}/*While loop*/
+			 | KW_REPEAT special_body KW_UNTIL expression  				    	{ $$ = template("do%swhile( !(%s) );",$2,$4); 								}/*Repeat*/
+			 | IDENT ':' statements												{ $$ = template("%s:\n%s",$1,$3);											}/*Label with statements*/		
+			 | KW_GOTO IDENT													{ $$ = template("goto %s;",$2);												}/*Goto statement*/
+			 | functionCall														{ $$ = template("%s;",$1); 	}		
+			 ; 
 
 basicCommand : variableAssignment
 		 | KW_RESULT OP_ASSIGN expression 									{ $$ = template("result = %s;",$3);    										}/*Result assignment*/
@@ -253,14 +270,13 @@ basicCommand : variableAssignment
 		 | KW_FOR variableAssignment KW_DOWNTO expression KW_DO special_body{ $$ = template("for(%s %s > %s; %s--)%s",$2,idenName($2),$4,idenName($2),$6); }/*For loop --*/
 		 | KW_WHILE expression KW_DO special_body							{ $$ = template("while(%s)%s",$2,$4); 		 								}/*While loop*/
 		 | KW_REPEAT special_body KW_UNTIL expression  				    	{ $$ = template("do%swhile( !(%s) );",$2,$4); 								}/*Repeat*/
-		 | IDENT ':'  														{ $$ = template("%s:\n",$1);												}/*Empty Label*/
-		 | IDENT ':' commands												{ $$ = template("%s:\n%s",$1,$3);											}/*Label with statements*/		
+		 | IDENT ':' statements												{ $$ = template("%s:\n%s",$1,$3);											}/*Label with statements*/		
 		 | KW_GOTO IDENT													{ $$ = template("goto %s;",$2);												}/*Goto statement*/
 		 | KW_RETURN 														{ $$ = template("return result;");											}/*Return*/
 		 | functionCall														{ $$ = template("%s;",$1); 													}/*Function call*/
 		 ;
 
-		 variableAssignment: IDENT complexBracketsL OP_ASSIGN expression	{ $$ = template("%s%s = %s;",$1,$2,$4);										}/*Variable assignment*/
+		 variableAssignment: IDENT complexBrackets OP_ASSIGN expression	{ $$ = template("%s%s = %s;",$1,$2,$4);										}/*Variable assignment*/
 				           ;
 
 		 ifStatementMiddle : %empty 										{ $$ = ""; 	    							 }
