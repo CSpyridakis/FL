@@ -82,12 +82,48 @@ basicDecleration: KW_TYPE typelist 	';'														   { $$ = template("%s\n", 
 									 | brackets '[' POSINT ']'			{ $$ = template("%s[%s]",$1, $3); 	}
 									 ;
 								
-				typelist : IDENT OP_EQ compound_type							{ $$ = template("typedef %s %s",$1,$3); }
-						 | typelist ';' IDENT OP_EQ compound_type				{ $$ = template("%s\ntypedef %s %s", $1, $3, $5); }
+				typelist : IDENT OP_EQ compound_type							{ char* ct = $3;
+																				  char* id = $1;
+																				  fprintf(stderr, "cur ct:%s\n", ct);	
+																				  if(strstr(ct, "FUNCTION") == NULL &&
+																					 strstr(ct, "PROCEDURE)") == NULL){
+																				  	
+																				  	char* C_ct = make_C_comp_type(ct);
+																				  	$$ = template("typedef %s %s;\n", C_ct, $1);
+																				  
+																				  }else{
+
+																				  	if(strstr(ct, "FUNCTION"))
+																				  		$$ = template("typedef %s;\n", replace_sub_str(ct, "FUNCTION", id) );
+																				  	else if(strstr(ct, "PROCEDURE"))
+																				  		$$ = template("typedef %s;\n", replace_sub_str(ct, "PROCEDURE", id) );
+																				  }
+																				}
+
+						 | typelist ';' IDENT OP_EQ compound_type				{ char* ct = $5;
+																				  char* id = $3;
+																				  char* secnd_tl = NULL;
+																				  fprintf(stderr, "cur ct:%s\n", ct);	
+																				  if(strstr(ct, "FUNCTION") == NULL &&
+																					 strstr(ct, "PROCEDURE)") == NULL){
+																				  	
+																				  	char* C_ct = make_C_comp_type(ct);
+																				  	secnd_tl = template("typedef %s %s;\n", C_ct, id);
+																				  
+																				  }else{
+
+																				  	if(strstr(ct, "FUNCTION"))
+																				  		secnd_tl = template("typedef %s;\n", replace_sub_str(ct, "FUNCTION", id) );
+																				  	else if(strstr(ct, "PROCEDURE"))
+																				  		secnd_tl = template("typedef %s;\n", replace_sub_str(ct, "PROCEDURE", id) );
+																				  }
+						 															$$ = template("%s\n%s", $1, secnd_tl); }
 						 ;
 
-				varlist : idents ':'  compound_type								{ $$ = template("%s %s;", $3, $1); }
-						| varlist ';' idents ':' compound_type					{ $$ = template("%s\n%s %s;", $1, $5, $3); }
+				varlist : idents ':'  compound_type								{ char* C_decl = make_C_decl($3, $1); 
+																				  $$ = template("%s;\n", C_decl); }
+						| varlist ';' idents ':' compound_type					{   char* C_decl = make_C_decl($5, $3); 
+																					$$ = template("%s%s;\n", $1, C_decl); }
 						;
 
 						idents : IDENT 											{ $$ = template("%s", $1);		 	}
