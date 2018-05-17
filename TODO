@@ -7,3 +7,7 @@
 4. Replace '' to "" in strings (Segmentation fault in C) DONE
 
 5. Replace \n in blocks with \n\t 
+
+6. Result in function arglist e.g file sample004.fl line 32  result := readInteger();
+
+7. Func/ Proc statements fix ALMOST DONE

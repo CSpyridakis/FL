@@ -24,14 +24,14 @@ extern int line_num;
 %token <crepr> IDENT POSINT REAL STRING OP_CAST_INT OP_CAST_REAL OP_CAST_BOOL OP_CAST_CHAR
 
 	/*TYPE*/
-%type <crepr> statements param_list func_decl proc_decl bracket_list param_specifier compound_type brackets
-%type <crepr> declerations declarationL basicDecleration typelist varlist idents dtype
+%type <crepr> statements params func_decl proc_decl bracket_list compound_type brackets funcStatements procStatements
+%type <crepr> declerations declarationL basicDecleration typelist varlist idents dtype paramsList FunProcStatementsL
 
 	/* Expressions' types */
 %type <crepr> expression complexBracketsL functionCall arglistCall  
 
 	/* Commands' types */
-%type <crepr> special_body commands basicCommand variableAssignment ifStatementMiddle fun_proc_comm func_proc_statements
+%type <crepr> special_body commands basicCommand variableAssignment ifStatementMiddle fun_proc_comm
 
 %left OP_NOT '*' '/' '+' '-' OP_EQ OP_INEQ OP_LT OP_LTE OP_GT OP_GTE OP_AND OP_OR
 
@@ -57,8 +57,8 @@ declarationL: basicDecleration 													{ $$ = template("%s", $1);		 	}
 
 basicDecleration: KW_TYPE typelist 	';'														   { $$ = template("%s\n", $2);		 	}
  				| KW_VAR varlist   	';'														   { $$ = template("%s\n", $2);		 	}
- 				| KW_FUNC IDENT '(' param_list ')' ':' compound_type ';' declerations KW_BEGIN func_proc_statements KW_RETURN KW_END ';' { $$ = template("\n%s %s(%s){\n%s result;\n%s\n%s\nreturn result;\n}\n",$7,$2,$4,$7,$9,$11); }
- 				| proc_decl ';' declerations KW_BEGIN func_proc_statements KW_END  			';'{ $$ = template("\n%s{\n%s\n%s\n}\n",$1,$3,$5); } 
+ 				| KW_FUNC IDENT '(' params ')' ':' compound_type ';' declerations KW_BEGIN funcStatements KW_RETURN KW_END ';' 	  { $$ = template("\n%s %s(%s){\n%s result;\n%s\n%s\nreturn result;\n}\n",$7,$2,$4,$7,$9,$11); }
+ 				| KW_PROC IDENT '(' params ')' ';' declerations KW_BEGIN procStatements KW_END ';'  							  { $$ = template("\nvoid %s(%s){\n%s\n%s\n}\n",$2,$4,$7,$9); } 
 				;
 										
 				typelist : IDENT OP_EQ compound_type							{ $$ = template("typedef %s %s",$1,$3); }
@@ -73,27 +73,33 @@ basicDecleration: KW_TYPE typelist 	';'														   { $$ = template("%s\n", 
 						       | idents ',' IDENT 								{ $$ = template("%s, %s", $1, $3); }
 						       ; 
 				       
-				func_decl : KW_FUNC '(' param_list ')' ':' compound_type		{ char* C_ct = make_C_comp_type($6);  $$ = template("%s (*FUNCTION)(%s)", C_ct, $3); }
-						 | KW_FUNC IDENT '(' param_list ')' ':' compound_type 	{ char* C_ct = make_C_comp_type($7);  $$ = template("%s %s(%s)", C_ct , $2, $4 ); }
+				func_decl : KW_FUNC '(' params ')' ':' compound_type			{ char* C_ct = make_C_comp_type($6);  $$ = template("%s (*FUNCTION)(%s)", C_ct, $3); }
+						 | KW_FUNC IDENT '(' params ')' ':' compound_type 		{ char* C_ct = make_C_comp_type($7);  $$ = template("%s %s(%s)", C_ct , $2, $4 ); }
 					 	 ;
 
-				proc_decl : KW_PROC '(' param_list ')' 							{ $$ = template("void (*PROCEDURE)(%s)", $3); } 
-						  | KW_PROC IDENT '(' param_list ')'  					{ $$ = template("void %s(%s)", $2, $4 ); }
+				proc_decl : KW_PROC '(' params ')' 								{ $$ = template("void (*PROCEDURE)(%s)", $3); } 
+						  | KW_PROC IDENT '(' params ')'  						{ $$ = template("void %s(%s)", $2, $4 ); }
 				          ;
 
-				func_proc_statements : %empty		    						{ $$ = ""; 							}
-							 		 | fun_proc_comm   ';' 						{ $$ = template("%s", $1); 			}
-							 		 | func_proc_statements fun_proc_comm  ';'  { $$ = template("%s\n%s", $1,$2); 	}
-									 ;
+				funcStatements : %empty		    						 	{ $$ = ""; 							}
+							   | FunProcStatementsL	';'						{ $$ = template("%s", $1); 			}
+							   ;
 
-				        param_list: param_specifier	 							{ $$ = template("%s",$1); 			}
-          						   | param_list param_specifier					{ $$ = template("%s%s", $1, $2);  	}
+				procStatements : %empty		    						 	{ $$ = ""; 							}
+							   | FunProcStatementsL							{ $$ = template("%s", $1); 			}
+							   ; 
+
+						FunProcStatementsL : fun_proc_comm   						 { $$ = template("%s", $1); 			}
+							 	  		   | FunProcStatementsL ';' fun_proc_comm    { $$ = template("%s\n%s", $1,$3); 	}
+								    	   ;
+
+				        params : %empty		    								{ $$ = ""; 							}
+				        	   | paramsList										{ $$ = template("%s",$1); 			}
+	  	  					   ;
+
+	  	  				paramsList : idents ':' compound_type	 				{ char* C_ct = make_C_comp_type($3); char* C_params = make_C_params(C_ct, $1); $$ = template("%s", C_params); }
+	  	  						   | paramsList ';' idents ':' compound_type	{ char* C_ct = make_C_comp_type($5); char* C_params = make_C_params(C_ct, $3); $$ = template("%s,%s", $1, C_params);  	}
 	  	  						   ;
-
-						param_specifier: %empty 								{ $$ = "";							}
-	       							   | idents ':' compound_type     			{ char* C_ct = make_C_comp_type($3); char* C_params = make_C_params(C_ct, $1); $$ = template("%s", C_params); }
-	       							   | idents ':' compound_type ';' 			{ char* C_ct = make_C_comp_type($3); char* C_params = make_C_params(C_ct, $1); $$ = template("%s, ", C_params); }
-	       							   ; 
 
 						compound_type: dtype
 							     	 | func_decl 								{ $$ = template("%s", $1); 			}
@@ -102,11 +108,11 @@ basicDecleration: KW_TYPE typelist 	';'														   { $$ = template("%s\n", 
 							  		 ;
 
 							  		dtype : KW_CHAR 							{ $$ = template("%s", "char"); 		}
-						    			 | KW_INT  								{ $$ = template("%s", "int"); 		}
-						    		 	 | KW_REAL 								{ $$ = template("%s", "double"); 	}
-						    		 	 | KW_BOOLEAN 							{ $$ = template("%s", "int"); 		}
-									 	 | IDENT 								{ $$ = template("%s", $1);			}
-							  		 	 ;
+						    			  | KW_INT  							{ $$ = template("%s", "int"); 		}
+						    		 	  | KW_REAL 							{ $$ = template("%s", "double"); 	}
+						    		 	  | KW_BOOLEAN 							{ $$ = template("%s", "int"); 		}
+									 	  | IDENT 								{ $$ = template("%s", $1);			}
+							  		 	  ;
 
 									bracket_list: brackets 						{ $$ = template("%s", $1); 			}
 									            | bracket_list brackets 		{ $$ = template("%s%s", $1, $2); 	}
