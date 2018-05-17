@@ -31,7 +31,7 @@ program useless;
         writeString(prompt);
         result := readInteger();
         writeString('You typed: ');
-        //writeInteger(result); 
+        writeInteger(result); 
         nl();
         return
     end;

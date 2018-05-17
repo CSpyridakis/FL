@@ -11,3 +11,5 @@
 6. Result in function arglist e.g file sample004.fl line 32  result := readInteger();
 
 7. Func/ Proc statements fix ALMOST DONE
+
+8. Parenthesis expressions fix (Maybe 17 less conficts)

@@ -60,7 +60,28 @@ basicDecleration: KW_TYPE typelist 	';'														   { $$ = template("%s\n", 
  				| KW_FUNC IDENT '(' params ')' ':' compound_type ';' declerations KW_BEGIN funcStatements KW_RETURN KW_END ';' 	  { $$ = template("\n%s %s(%s){\n%s result;\n%s\n%s\nreturn result;\n}\n",$7,$2,$4,$7,$9,$11); }
  				| KW_PROC IDENT '(' params ')' ';' declerations KW_BEGIN procStatements KW_END ';'  							  { $$ = template("\nvoid %s(%s){\n%s\n%s\n}\n",$2,$4,$7,$9); } 
 				;
-										
+
+				compound_type: dtype
+					     	 | func_decl 								{ $$ = template("%s", $1); 			}
+					       	 | proc_decl 								{ $$ = template("%s", $1); 			}
+					     	 | KW_ARRAY bracket_list KW_OF compound_type{ $$ = make_parsable_comp_type($4, $2); }
+					  		 ;
+
+					  		dtype : KW_CHAR 							{ $$ = template("%s", "char"); 		}
+				    			  | KW_INT  							{ $$ = template("%s", "int"); 		}
+				    		 	  | KW_REAL 							{ $$ = template("%s", "double"); 	}
+				    		 	  | KW_BOOLEAN 							{ $$ = template("%s", "int"); 		}
+							 	  | IDENT 								{ $$ = template("%s", $1);			}
+					  		 	  ;
+
+							bracket_list: %empty  	 					{ $$ = ""; 							} 
+										| brackets 						{ $$ = template("%s", $1); 			}
+							            ; 
+
+							brackets : '[' POSINT ']'					{ $$ = template("[%s]", $2); 		}
+									 | brackets '[' POSINT ']'			{ $$ = template("%s[%s]",$1, $3); 	}
+									 ;
+								
 				typelist : IDENT OP_EQ compound_type							{ $$ = template("typedef %s %s",$1,$3); }
 						 | typelist ';' IDENT OP_EQ compound_type				{ $$ = template("%s\ntypedef %s %s", $1, $3, $5); }
 						 ;
@@ -101,26 +122,6 @@ basicDecleration: KW_TYPE typelist 	';'														   { $$ = template("%s\n", 
 	  	  						   | paramsList ';' idents ':' compound_type	{ char* C_ct = make_C_comp_type($5); char* C_params = make_C_params(C_ct, $3); $$ = template("%s,%s", $1, C_params);  	}
 	  	  						   ;
 
-						compound_type: dtype
-							     	 | func_decl 								{ $$ = template("%s", $1); 			}
-							       	 | proc_decl 								{ $$ = template("%s", $1); 			}
-							     	 | KW_ARRAY bracket_list KW_OF compound_type{ $$ = make_parsable_comp_type($4, $2); }
-							  		 ;
-
-							  		dtype : KW_CHAR 							{ $$ = template("%s", "char"); 		}
-						    			  | KW_INT  							{ $$ = template("%s", "int"); 		}
-						    		 	  | KW_REAL 							{ $$ = template("%s", "double"); 	}
-						    		 	  | KW_BOOLEAN 							{ $$ = template("%s", "int"); 		}
-									 	  | IDENT 								{ $$ = template("%s", $1);			}
-							  		 	  ;
-
-									bracket_list: brackets 						{ $$ = template("%s", $1); 			}
-									            | bracket_list brackets 		{ $$ = template("%s%s", $1, $2); 	}
-									            ; 
-
-									brackets: %empty  	 						{ $$ = ""; 							}
-											| '[' POSINT ']'					{ $$ = template("[%s]", $2); 		}
-											;
 
 statements: %empty				       	{ $$ = ""; 								}
 		  | commands		   			{ $$ = template("%s\n", $1); 			}
@@ -137,6 +138,7 @@ expression : POSINT 							{ $$ = template("%s",$1); 		   }
 		   | IDENT complexBracketsL 			{ $$ = template("%s%s",$1,$2); 	   }
 		   | KW_TRUE 							{ $$ = template("1");	 		   }
 		   | KW_FALSE							{ $$ = template("0"); 			   }
+		   | KW_RESULT							{ $$ = template("result"); 		   }
 		   | functionCall						{ $$ = template("%s",$1); 		   }
 		   | '+' expression 					{ $$ = template("+%s",$2); 		   }
 		   | '-' expression 					{ $$ = template("-%s",$2); 		   }  
@@ -156,7 +158,7 @@ expression : POSINT 							{ $$ = template("%s",$1); 		   }
 		   | expression OP_OR   expression 		{ $$ = template("%s || %s",$1,$3); }
 		   | '(' expression ')'					{ $$ = template("(%s)",$2);    	   }
 		   | expression '(' expression ')'		{ $$ = template("%s (%s)",$1,$3);  }
-		  /* | '(' dtype ')' expression			{ $$ = template("(%s)%s",$2,$4);   }*/
+		   /*| '(' dtype ')' expression			{ $$ = template("(%s)%s",$2,$4);   }*/
 		   ;
 
 			complexBracketsL : %empty  										{ $$ = ""; 						  }

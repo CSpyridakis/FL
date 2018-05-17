@@ -54,7 +54,7 @@ flex_compile:
 	$(FLEX) -o ptucc_lex.c $(PATH_TO_SRC)ptucc_lex.l
 
 bison_compile: 
-	$(BISON) -d $(PATH_TO_SRC)ptucc_parser.y
+	$(BISON) -d -v -r all $(PATH_TO_SRC)ptucc_parser.y
 
 src_compile:
 	mkdir -p bin
@@ -62,6 +62,7 @@ src_compile:
 	mv ptucc_lex.c ./bin/
 	mv ptucc_parser.tab.c ./bin/
 	mv ptucc_parser.tab.h ./bin/
+	mv ptucc_parser.output ./bin/
 	$(CC) $(CFLAGS) -o fl_compiler $(PATH_TO_BIN)ptucc_lex.c $(PATH_TO_BIN)ptucc_parser.tab.c $(PATH_TO_SRC)cgen.c $(PATH_TO_SRC)ptucc.c $(LIBS)
 	mv fl_compiler ./bin/
 
