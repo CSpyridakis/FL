@@ -1,5 +1,4 @@
 @defmacro N 100
-
 program useless;
 
     type

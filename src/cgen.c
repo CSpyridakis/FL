@@ -66,7 +66,7 @@ char* string_ptuc2c(char* P)
 */
  void yyerror (char const *pat, ...) {
  	va_list arg;
-    //fprintf (stderr, "line %d: ", line_num);
+    fprintf (stderr, "line %d: ", line_num);
 
     va_start(arg, pat);
     vfprintf(stderr, pat, arg);

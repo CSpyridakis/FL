@@ -1,0 +1,5 @@
+1. FIX varlists, typelists etc... (Prints..)
+
+2. Casting fix (Without casting 83 shift/reduce conflicts with casting 91 shift/reduce and 1 reduce/reduce)
+
+3. Fix errors for samples 4,5,6
