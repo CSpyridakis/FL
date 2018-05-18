@@ -2,7 +2,7 @@
 
 2. Casting fix (Without casting 83 shift/reduce conflicts with casting 91 shift/reduce and 1 reduce/reduce)
 
-3. Fix errors for samples 4,5,6
+3. Fix errors for samples 4,5,6 ALMOST DONE
 
 4. Replace '' to "" in strings (Segmentation fault in C) DONE
 
@@ -13,3 +13,8 @@
 7. Func/ Proc statements fix ALMOST DONE
 
 8. Parenthesis expressions fix (Maybe 17 less conficts)
+
+
+9 ->>> IF STATEMENTS
+
+10 ->> EXPRESSIONS

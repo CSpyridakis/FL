@@ -19,7 +19,8 @@ begin
 			f0 := temp;
 			n := n-1
 		end;
-	result := f1
+	result := f1;
+	return 
 end;
 
 function factorial(n:integer) : integer;
