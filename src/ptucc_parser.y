@@ -164,6 +164,42 @@ basicDeclaration: KW_TYPE typelist 	';'														   { $$ = template("%s\n", 
 							 	  		   | FunProcStatementsL ';' fun_proc_comm    { $$ = template("%s\n%s", $1,$3); 	}
 								    	   ;
 
+expression   : POSINT 							{ $$ = template("%s",$1); 		   }
+		     | REAL								{ $$ = template("%s",$1); 		   }					
+		     | STRING 							{ $$ = template("%s",$1); 		   } 
+		     | IDENT complexBrackets 			{ $$ = template("%s%s",$1,$2); 	   }
+		     | KW_TRUE 							{ $$ = template("1");	 		   }
+		     | KW_FALSE							{ $$ = template("0"); 			   }
+		     | KW_RESULT						{ $$ = template("result"); 		   }
+		     | functionCall						{ $$ = template("%s",$1); 		   }
+		     	/*Prefix*/
+		     | '+' expression 	%prec PREFIX	{ $$ = template("+%s",$2); 		   }
+		     | '-' expression 	%prec PREFIX	{ $$ = template("-%s",$2); 		   }  
+		     | OP_NOT expression 	   			{ $$ = template("!%s",$2);  	   }
+		     	/*Numeric*/
+		     | expression '+' expression 		{ $$ = template("%s + %s",$1,$3);  }
+		     | expression '-' expression 		{ $$ = template("%s - %s",$1,$3);  }
+		     | expression '/' expression 		{ $$ = template("%s / %s",$1,$3);  }
+		     | expression '*' expression 		{ $$ = template("%s * %s",$1,$3);  }
+		     | expression '%' expression 		{ $$ = template("%s %% %s",$1,$3);  }
+		     	/*Relational*/
+		     | expression OP_EQ   expression 	{ $$ = template("%s == %s",$1,$3); }
+		     | expression OP_INEQ expression 	{ $$ = template("%s != %s",$1,$3); }
+		     | expression OP_LT   expression 	{ $$ = template("%s < %s",$1,$3);  }
+		     | expression OP_LTE  expression 	{ $$ = template("%s <= %s",$1,$3); }
+		     | expression OP_GT   expression 	{ $$ = template("%s > %s",$1,$3);  }
+		     | expression OP_GTE  expression 	{ $$ = template("%s >= %s",$1,$3); }
+		     	/*Logical*/
+		     | expression OP_AND  expression 	{ $$ = template("%s && %s",$1,$3); }
+		     | expression OP_OR   expression 	{ $$ = template("%s || %s",$1,$3); }
+		     	/*Parenthensis*/
+		     | '(' expression ')'				{ $$ = template("(%s)",$2);    	   }
+		     | expression '(' expression ')'	{ $$ = template("%s (%s)",$1,$3);  }
+		  		/*Cast*/
+		     | '(' dtype ')' expression			{ $$ = template("(%s)%s",$2,$4);   }
+		     ;
+
+
 statement: labeled_statement
 		| compound_statement
 		| expression_statement
@@ -219,9 +255,10 @@ jump_statement
 	;
 
 primary_expression
-	: IDENT
-	| CONSTANT
-	| STRING_LITERAL
+	: POSINT 							{ $$ = template("%s",$1); 		   }
+	| REAL								{ $$ = template("%s",$1); 		   }					
+	| STRING 							{ $$ = template("%s",$1); 		   } 
+    | IDENT complexBrackets 			{ $$ = template("%s%s",$1,$2); 	   }
 	| '(' expression ')'
 	;
 
