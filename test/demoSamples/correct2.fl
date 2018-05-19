@@ -19,6 +19,7 @@ type
 function sing(_do, __not: tell; them, _or: me; blabla: array of _is): tell;
 	var 
 		i: integer;
+		bye_bye: array of char;
 		tired: integer;
 		soreness_of_throat: integer;
 begin
@@ -46,16 +47,21 @@ begin
 	end;
 
 	tired := 1 + 2 + 3 + 1234;
-	result := tired + 91*89- soreness_of_throat div 3 mod 4 and blabla or ((int)_do + (int)__not + blabla);
+	tired := (tired + (91*89- soreness_of_throat div 3 mod 4) and (blabla or ((integer)'5' + (integer)'b' + blabla)));
+	bye_bye := (tell) 1234234342;
+	result := bye_bye;
 	return
 end;
 
 var a_song: array of char;
+	_do, __not: tell; 
+	them, _or: me; 
+	blabla: array of _is;
 
 begin
 	goto here;
 	there:
-	a_song := sing((integer)1, (char)2, (boolean)3, 4, (array of _is)5);
+	a_song := sing(_do, __not, them, _or, blabla);
 	goto the_end;
 	here:
 	goto there;
