@@ -1,13 +1,75 @@
 #!/bin/sh
 
-filefolder="./test/"
-inputFile=$1
+transCompileFile()
+{
+	#make
+	inputFile=$1
+	postf=.fl
+	flFile="${inputFile}"
+	fileName= "${inputFile%$postf}"
+	cFile="${inputFile%$postf}.c"
+	./bin/fl_compiler < "${flFile}" > "${cFile}"
+}
 
-flfile="${inputFile}"
+good()
+{
+	echo "Try to Trans-compile all working samples:" 
+	echo -n "sample001.fl: ";transCompileFile test/samples/sample001.fl ; echo
+	echo -n "sample002.fl: ";transCompileFile test/samples/sample002.fl ; echo
+	echo -n "sample003.fl: ";transCompileFile test/samples/sample003.fl ; echo
+	echo -n "sample004.fl: ";transCompileFile test/samples/sample004.fl ; echo
+	echo -n "sample005.fl: ";transCompileFile test/samples/sample005.fl ; echo
+	echo -n "sample006.fl: ";transCompileFile test/samples/sample006.fl ; echo
+	echo -n "correct1.fl:  ";transCompileFile test/demoSamples/correct1.fl ; echo 
+	echo -n "correct2.fl:  ";transCompileFile test/demoSamples/correct2.fl ; echo 
+}
 
-postf=.fl
-filename=${inputFile%$postf}
-cfile="${filename}.c"
+bad()
+{
+	echo "Try to Trans-compile all NON-working samples:" 
+	echo -n "bad001.fl: ";transCompileFile test/samples/bad001.fl ; echo
+	echo -n "bad002.fl: ";transCompileFile test/samples/bad002.fl ; echo
+	echo -n "bad003.fl: ";transCompileFile test/samples/bad003.fl ; echo
+	echo -n "bad004.fl: ";transCompileFile test/samples/bad004.fl ; echo
+	echo -n "bad005.fl: ";transCompileFile test/samples/bad005.fl ; echo
+	echo -n "wrong1.fl:  ";transCompileFile test/demoSamples/wrong1.fl ; echo
+	echo -n "wrong2.fl:  ";transCompileFile test/demoSamples/wrong2.fl
+}
 
-make
-./bin/fl_compiler < "${flfile}" > "${cfile}"
+#Help Menu
+if [ "$1" = "-h" ] ; then
+	echo "Finctional Language to C Trans-compiler"
+	echo "Usage: fl -h | -a"
+	echo "Usage: fl [target]"
+	echo "Usage: fl [target] [option]"
+	echo "Options:"
+	echo "-h 	This help menu"
+	echo "-a 	Trans-compile all sample files (all files in test/* dir)"
+	echo "-r 	Trans-compile and compile target file"
+	echo "-R 	Trans-compile, compile and execute target file (executable file is runMe)"
+	exit 0
+fi
+
+#Trans-compile all sample files
+if [ "$1" = "-a" ] ; then
+	good
+	bad
+	exit 0
+fi
+
+#Trans-compile and Compile 
+if [ "$2" = "-r" ] ; then
+	transCompileFile $1 ; echo ; echo
+	gcc "${cFile}" -o run ;
+	exit 0
+fi
+
+#Trans-compile Compile and run
+if [ "$2" = "-R" ] ; then
+	transCompileFile $1 ; echo ; echo
+	gcc "${cFile}" -o runMe ; echo
+	./runMe
+	exit 0
+fi
+
+transCompileFile $1 ; echo

@@ -73,10 +73,11 @@ extern int line_num;
 %type <crepr> typelist varlist params compound_type funcStatements procStatements idents paramsList dtype bracket_list brackets fun_proc_comm FunProcStatementsL
 
 	/* Commands */
-%type <crepr> special_body commands basicCommand variableAssignment ifStatement special_body_list arglist complexBracketsL
+%type <crepr> special_body commands basicCommand variableAssignment ifStatement special_body_list arglist complexBracketsL repeat_special_body repeat_special_body_list
           
 	/* Expressions */
-%type <crepr> expression complexBrackets functionCall arglistCall prefix_expression numeric_expression binary_op unary_op relational_expression relational_op logical_expression logical_op parenth_expression basic_expression primitive_expression cast_expression
+%type <crepr> expression complexBrackets functionCall arglistCall prefixExpression numericExpression binary_op unary_op relationalExpression relational_op logicalExpression logical_op parenthExpression basicExpression primitiveExpression castExpression
+
 
 	/*------------------------------*/
 %left "||"
@@ -93,6 +94,7 @@ extern int line_num;
 program: KW_PROGRAM IDENT ';' declarations KW_BEGIN statements KW_END '.'
 { 
 	if(yyerror_count==0) {
+		fprintf(stderr,"Trans-Compiled in C!");
 		puts(c_prologue);
 		printf("/* program  %s */ \n\n", $2);
 		printf("%s\n", $4);		
@@ -115,8 +117,7 @@ basicDeclaration: KW_TYPE typelist 	';'														   { $$ = template("%s\n", 
 				;
 
 				typelist : IDENT OP_EQ compound_type							{ char* ct = $3;
-																				  char* id = $1;
-																				  fprintf(stderr, "cur ct:%s\n", ct);	
+																				  char* id = $1;	
 																				  if(strstr(ct, "FUNCTION") == NULL &&
 																					 strstr(ct, "PROCEDURE)") == NULL){
 																				  	
@@ -134,8 +135,7 @@ basicDeclaration: KW_TYPE typelist 	';'														   { $$ = template("%s\n", 
 
 						 | typelist ';' IDENT OP_EQ compound_type				{ char* ct = $5;
 																				  char* id = $3;
-																				  char* secnd_tl = NULL;
-																				  fprintf(stderr, "cur ct:%s\n", ct);	
+																				  char* secnd_tl = NULL;	
 																				  if(strstr(ct, "FUNCTION") == NULL &&
 																					 strstr(ct, "PROCEDURE)") == NULL){
 																				  	
@@ -207,12 +207,12 @@ basicDeclaration: KW_TYPE typelist 	';'														   { $$ = template("%s\n", 
 								    	   ;
 
 
-statements: %empty				       	{ $$ = ""; 								}
+statements: %empty				       	{ $$ = ";"; 								}
 		  | commands		   			{ $$ = template("%s\n", $1); 			}
 		  ;		
 
-commands : basicCommand														{ $$ = template("%s\n", $1); 	  }
-		 | commands ';' basicCommand 										{ $$ = template("%s\n%s",$1,$3);  }
+commands : basicCommand															{ $$ = template("%s\n", $1); 	  }
+		 | commands ';' basicCommand 											{ $$ = template("%s\n%s",$1,$3);  }
 		 ;
 
 basicCommand : fun_proc_comm													{ $$ = template("%s",$1); 			}
@@ -225,8 +225,8 @@ fun_proc_comm: variableAssignment
 			 | KW_FOR variableAssignment KW_TO expression KW_DO special_body 	{ $$ = template("for(%s %s < %s; %s++)%s",$2,idenName($2),$4,idenName($2),$6);	}/*For loop ++*/
 			 | KW_FOR variableAssignment KW_DOWNTO expression KW_DO special_body{ $$ = template("for(%s %s > %s; %s--)%s",$2,idenName($2),$4,idenName($2),$6); }/*For loop --*/
 			 | KW_WHILE expression KW_DO special_body							{ $$ = template("while(%s)%s",$2,$4); 		 								}/*While loop*/
-			 | KW_REPEAT special_body KW_UNTIL expression  				    	{ $$ = template("do%swhile( !(%s) );",$2,$4); 								}/*Repeat*/
-			 | IDENT ':' statements												{ $$ = template("%s:\n%s",$1,$3);											}/*Label with statements*/		
+			 | KW_REPEAT repeat_special_body KW_UNTIL expression  				    	{ $$ = template("do%swhile( !(%s) );",$2,$4); 								}/*Repeat*/
+			 | IDENT ':' statements												{ $$ = template("%s:\n%s",$1,$3);											}/*Label with statements*/
 			 | KW_GOTO IDENT													{ $$ = template("goto %s;",$2);												}/*Goto statement*/
 			 | functionCall														{ $$ = template("%s;",$1); 	}		
 			 ; 
@@ -252,7 +252,8 @@ fun_proc_comm: variableAssignment
 																	if (strcmp($1, "readString")==0){
 																		$$ = template("gets()");
 																	}else if (strcmp($1, "readInteger")==0){
-																		$$ = template("atoi(gets())");
+																		//$$ = template("(int)atoi((char*)gets())");
+																		$$ = template("scanf(\"%%d\",&tmp)");
 																	}else if (strcmp($1, "readReal")==0){
 																		$$ = template("atof(gets())");
 																	}else if (strcmp($1, "writeString")==0){
@@ -264,6 +265,9 @@ fun_proc_comm: variableAssignment
 																	}else{
 																		$$ = template("%s(%s)",$1,$3);  
 																	}
+																	
+																	//$$ = template("%s(%s)",$1,$3);  
+
 																}
 			 		;
 
@@ -279,74 +283,77 @@ fun_proc_comm: variableAssignment
 special_body: %empty { $$ = ";"; }
 			| special_body_list { $$ = template("%s", $1); }
 		    ;
-
 special_body_list: basicCommand 					{ $$ = template("\n%s", $1); }
 				 | KW_BEGIN statements KW_END 		{ $$ = template("{\n%s\n}\n", $2); }
 				 ;
 
+repeat_special_body : %empty { $$ = ";"; }
+					| repeat_special_body_list { $$ = template("%s", $1); }
+		     		;
+repeat_special_body_list : basicCommand 					{ $$ = template("\n%s", $1); }
+				 		 | KW_BEGIN statements KW_END ';'	{ $$ = template("{\n%s\n}\n", $2); }
+						 ;
 
-		   		/*Terminal*/
-expression:  basic_expression
-	     | KW_RESULT						{ $$ = template("result"); 		   }
-	     | functionCall						{ $$ = template("%s",$1); 		   }
-	     | prefix_expression
-	     | numeric_expression
-	     | relational_expression
-	     | logical_expression
-	     | parenth_expression
-	  	 | cast_expression
-	     ;
 
-basic_expression: primitive_expression
-			    | IDENT complexBrackets 			{ $$ = template("%s%s",$1,$2); 	   }
-			     ;
 
-primitive_expression: POSINT 							{ $$ = template("%s",$1); 		   }
-			     | REAL								{ $$ = template("%s",$1); 		   }					
-			     | STRING 							{ $$ = template("%s",$1); 		   } 
-			     | KW_TRUE 							{ $$ = template("1");	 		   }
-			     | KW_FALSE							{ $$ = template("0"); 			   }
-			     ;
+expression: basicExpression					{ $$ = template("%s",$1); 		   }
+	      | prefixExpression				{ $$ = template("%s",$1); 		   }
+	      | numericExpression				{ $$ = template("%s",$1); 		   }
+	      | relationalExpression			{ $$ = template("%s",$1); 		   }
+	      | logicalExpression				{ $$ = template("%s",$1); 		   }
+	      | parenthExpression				{ $$ = template("%s",$1); 		   }
+	  	  | castExpression					{ $$ = template("%s",$1); 		   }
+	      | KW_RESULT						{ $$ = template("result"); 		   }
+	      | functionCall					{ $$ = template("%s",$1); 		   }
+	      ;
 
-cast_expression: '(' dtype ')' expression			{ $$ = template("(%s)%s",$2,$4);   }
+		basicExpression : primitiveExpression				{ $$ = template("%s",$1); 		   }
+					    | IDENT complexBrackets 			{ $$ = template("%s%s",$1,$2); 	   }
+					    ;
 
-prefix_expression: unary_op expression 	%prec PREFIX	{ $$ = template("+%s",$2); 		   }
-				;
+				primitiveExpression : POSINT 				{ $$ = template("%s",$1); 		   }
+							        | REAL					{ $$ = template("%s",$1); 		   }					
+							        | STRING 				{ $$ = template("%s",$1); 		   } 
+							        | KW_TRUE 				{ $$ = template("1");	 		   }
+							        | KW_FALSE				{ $$ = template("0"); 			   }
+							        ;
 
-logical_expression: expression logical_op expression 	{ $$ = template("%s && %s",$1,$3); }
+prefixExpression: unary_op expression %prec PREFIX			{ $$ = template("%s%s",$1,$2); 	   }
+				;	
+			unary_op: '+' 									{ $$ = template("+"); 			   }
+			        | '-' 									{ $$ = template("-"); 			   }
+			        | OP_NOT 								{ $$ = template("!"); 			   }
+			        ;
+
+numericExpression: expression binary_op expression 			{ $$ = template("%s %s %s",$1,$2,$3);  }
+		     ;
+			binary_op: '+' 									{ $$ = template("+"); 			   }
+			         | '-' 									{ $$ = template("-"); 			   }
+			         | '/' 									{ $$ = template("/"); 			   }
+			         | '*' 									{ $$ = template("*"); 			   }
+			         | '%' 									{ $$ = template("%%"); 			   }
+			         ;
+
+relationalExpression: expression relational_op expression 	{ $$ = template("%s %s %s",$1,$2,$3); }
+				     ; 
+			relational_op: OP_EQ 							{ $$ = template("=="); 			   }
+						 | OP_INEQ 							{ $$ = template("!="); 			   }
+						 | OP_LT 							{ $$ = template("<"); 			   }
+						 | OP_LTE 							{ $$ = template("<="); 			   }
+						 | OP_GT 							{ $$ = template(">"); 			   }
+						 | OP_GTE 							{ $$ = template(">="); 			   }
+						 ;
+
+logicalExpression: expression logical_op expression 		{ $$ = template("%s %s %s",$1,$2,$3); }
  				  ;
+ 	   logical_op : OP_AND 									{ $$ = template("&&"); 			   }
+          		  | OP_OR 									{ $$ = template("||"); 			   }
+          		  ;
 
-logical_op: OP_AND
-          | OP_OR
-          ;
-
-parenth_expression: '(' expression ')'				{ $$ = template("(%s)",$2);    	   }
-		     	  | expression '(' expression ')'	{ $$ = template("%s (%s)",$1,$3);  }
+parenthExpression: '(' expression ')'					{ $$ = template("(%s)",$2);    	   }
+		     	  | expression '(' expression ')'		{ $$ = template("%s (%s)",$1,$3);  }
 		     	  ;
 
-numeric_expression: expression binary_op expression 		{ $$ = template("%s + %s",$1,$3);  }
-		     ;
+castExpression: '(' dtype ')' expression				{ $$ = template("(%s)%s",$2,$4);   }
 
-relational_expression: expression relational_op expression 	{ $$ = template("%s == %s",$1,$3); }
-				     ; 
-
-relational_op: OP_EQ
-			 | OP_INEQ
-			 | OP_LT
-			 | OP_LTE
-			 | OP_GT
-			 | OP_GTE
-			 ;
-
-unary_op: '+' 
-        | '-' 
-        | OP_NOT 
-        ;
-
-binary_op: '+' 
-         | '-' 
-         | '/' 
-         | '*' 
-         | '%' 
-         ;
 %%

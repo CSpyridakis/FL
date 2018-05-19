@@ -1,0 +1,84 @@
+(* 
+	 Finding the Sum of the Factors of a Number (1-1000)
+*)
+
+program FF;
+
+
+type 
+	string = array of char;
+	intfunc = function(n: integer) : integer;
+
+var 
+	i: integer;
+	sumFactBasic: integer;
+
+function menu(): integer;
+	var 
+		tmp: integer;
+begin
+	repeat 
+		begin
+			writeString("\n");
+			writeString('Give a number(1-1000): ');
+			tmp := readInteger();
+
+			if tmp < 1 then 
+				writeString('\nNumber too small!')
+			else if (tmp > 1000) then
+				writeString('\nNumber too big!')
+		end;
+	until (tmp > 1) and (tmp < 1000) ;
+
+	result := tmp;
+	return
+end;
+
+function factor(n:integer) : integer;
+var
+	fac, i: integer;
+	arrayFac :array [1000] of integer;
+	numOfFactors,factorsSum: integer;
+begin
+	numOfFactors :=0;
+	for i:=1 to n + 1 do begin
+		if n mod i = 0 then begin
+			writeInteger(i);
+			writeString(" "); 
+			arrayFac[numOfFactors] := i;
+			numOfFactors := numOfFactors+1
+		end;
+
+		if n=i && (numOfFactors = 2 or numOfFactors = 1) then
+			writeString("Number is prime") 
+	end;
+	
+	factorsSum:=0;
+	while numOfFactors>=0 do begin
+		factorsSum:=factorsSum+arrayFac[numOfFactors];
+		numOfFactors:=numOfFactors-1
+	end;
+	writeString("\nSum of Factors:");
+	writeInteger(factorsSum);
+	result:=factorsSum;
+	return
+end;
+
+procedure run(text: string; f: intfunc; val: integer);
+begin
+	writeString(text); 
+	f(val);
+	writeString('\n')
+end;
+
+begin
+	begin_main:
+		goto factor_label;
+
+	writeString("Never Print This");
+
+	factor_label:
+		run("\nFactors:", factor, menu());
+
+	writeString("Exit")
+end.

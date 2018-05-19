@@ -1,0 +1,90 @@
+(* 
+	 Finding the Sum of the Factors of a Number (1-1000)
+*)
+
+ FF;																(* Program missed	*)
+
+
+type 
+	string = array  char;											(* of missed *)
+	intfunc = function(n: integer) : integer;
+
+var 
+	i: integer;
+	sumFactBasic: integer;
+
+function menu(): integer;
+	
+begin
+	var 															(* Var in function body	*)
+		tmp: integer;
+
+	repeat 
+		begin
+			writeString("\n");
+			writeString('Give a number(1-1000): ');
+			tmp := readInteger();
+
+			if tmp < 1 then 
+				writeString('\nNumber too small!')
+			else if (tmp > 1000) then
+				writeString('\nNumber too big!')
+		end;
+	until (tmp > 1) and (tmp < 1000) ;
+
+	result := tmp;
+																	(* return missed *)
+end;
+
+
+
+function factor(n:integer) : ;										(* return type missed *)
+var
+	fac, i: integer;
+	arrayFac :array [1000] of integer;
+	numOfFactors,factorsSum: integer;
+begin
+	numOfFactors :=0;
+	for i:=1 to n + 1 begin 										(* do missed *)
+		if n mod i = 0 then begin
+			writeInteger(i);
+			writeString(" ") 										(* ; missed *) 
+			arrayFac[numOfFactors] := i;
+			numOfFactors := numOfFactors+1
+		end;
+
+		if n=i && (numOfFactors = 2 | numOfFactors = 1) then		(* | unknown symbol *)
+			writeString("Number is prime") 
+	end;
+	
+	factorsSum=0;													(* = instead on := *)
+	while numOfFactors>=0 do begin
+		factorsSum:=factorsSum+arrayFac[numOfFactors];
+		numOfFactors:=numOfFactors-1;								(* Extra ; *)						
+	end;
+	writeString("\nSum of Factors:");
+	writeInteger(factorsSum);
+	result:=factorsSum;
+	return
+end;
+
+procedure run(text: string; f= intfunc; val: integer); 				(* "f = intfunc" instead of "f: intfunc" *)
+begin
+	writeString(text); 
+	f(val);
+	writeString('\n');												
+	return															(* return statement in procedure *)
+end;
+end;																(* Extra end; *)
+
+begin
+	begin_main:
+		goto factor_label;
+
+	writeString("Never Print This");
+
+	factor_label:
+		run("\nFactors:", factor, menu()));							(* Extra ) *)
+
+	writeString("Exit")
+end.

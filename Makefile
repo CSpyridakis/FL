@@ -58,7 +58,6 @@ bison_compile:
 
 src_compile:
 	mkdir -p bin
-	#TODO MAKEFILE FIX
 	mv ptucc_lex.c ./bin/
 	mv ptucc_parser.tab.c ./bin/
 	mv ptucc_parser.tab.h ./bin/
@@ -69,5 +68,5 @@ src_compile:
 clean:
 	$(RM) ./bin/*.*
 	$(RM) ./bin/fl_compiler
-	$(RM) ./test/*.c
+	$(RM) ./test/demoSamples/*.c
 	$(RM) ./test/samples/*.c
