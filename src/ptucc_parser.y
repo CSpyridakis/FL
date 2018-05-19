@@ -64,18 +64,19 @@ extern int line_num;
 %type <crepr> special_body commands basicCommand variableAssignment ifStatement special_body_list arglist complexBracketsL repeat_special_body repeat_special_body_list
           
 	/* Expressions */
-%type <crepr> expression complexBrackets functionCall arglistCall prefixExpression numericExpression binary_op unary_op relationalExpression relational_op logicalExpression logical_op parenthExpression basicExpression primitiveExpression castExpression
+%type <crepr> expression complexBrackets functionCall arglistCall           
 
 
 	/*------------------------------*/
-%left OP_OR
-%left OP_AND
-%left OP_EQ OP_INEQ OP_LT OP_GT OP_LTE OP_GTE 
-%left OP_ADD OP_MINUS
-%left OP_MUL OP_DIV OP_MOD
 %left SYM_L_P SYM_R_P SYM_L_B SYM_R_B
-%nonassoc PREFIX
-%nonassoc OP_NOT
+%left OP_NOT
+%left PREFIX
+%left CAST
+%left OP_MUL OP_DIV OP_MOD
+%left OP_ADD OP_MINUS
+%left OP_EQ OP_INEQ OP_LT OP_GT OP_LTE OP_GTE 
+%left OP_AND 
+%left OP_OR
 %nonassoc KW_THEN
 %nonassoc KW_ELSE
 %%
@@ -284,65 +285,32 @@ repeat_special_body_list : basicCommand 						{ $$ = template("\n%s", $1); }
 						 ;
 
 
-
-expression: basicExpression					{ $$ = template("%s",$1); 		   }
-	      | prefixExpression				{ $$ = template("%s",$1); 		   }
-	      | numericExpression				{ $$ = template("%s",$1); 		   }
-	      | relationalExpression			{ $$ = template("%s",$1); 		   }
-	      | logicalExpression				{ $$ = template("%s",$1); 		   }
-	      | parenthExpression				{ $$ = template("%s",$1); 		   }
-	  	  | castExpression					{ $$ = template("%s",$1); 		   }
-	      | KW_RESULT						{ $$ = template("result"); 		   }
-	      | functionCall					{ $$ = template("%s",$1); 		   }
-	      ;
-
-		basicExpression : primitiveExpression				{ $$ = template("%s",$1); 		   }
-					    | IDENT complexBrackets 			{ $$ = template("%s%s",$1,$2); 	   }
-					    ;
-
-				primitiveExpression : POSINT 				{ $$ = template("%s",$1); 		   }
-							        | REAL					{ $$ = template("%s",$1); 		   }					
-							        | STRING 				{ $$ = template("%s",$1); 		   } 
-							        | KW_TRUE 				{ $$ = template("1");	 		   }
-							        | KW_FALSE				{ $$ = template("0"); 			   }
-							        ;
-
-prefixExpression: unary_op expression %prec PREFIX			{ $$ = template("%s%s",$1,$2); 	   }
-				;	
-			unary_op: OP_ADD 								{ $$ = template("+"); 			   }
-			        | OP_MINUS 								{ $$ = template("-"); 			   }
-			        | OP_NOT 								{ $$ = template("!"); 			   }
-			        ;
-
-numericExpression: expression binary_op expression 			{ $$ = template("%s %s %s",$1,$2,$3);  }
-		     ;
-			binary_op: OP_ADD 								{ $$ = template("+"); 			   }
-			         | OP_MINUS 							{ $$ = template("-"); 			   }
-			         | OP_DIV 								{ $$ = template("/"); 			   }
-			         | OP_MUL 								{ $$ = template("*"); 			   }
-			         | OP_MOD 								{ $$ = template("%%"); 			   }
-			         ;
-
-relationalExpression: expression relational_op expression 	{ $$ = template("%s %s %s",$1,$2,$3); }
-				     ; 
-			relational_op: OP_EQ 							{ $$ = template("=="); 			   }
-						 | OP_INEQ 							{ $$ = template("!="); 			   }
-						 | OP_LT 							{ $$ = template("<"); 			   }
-						 | OP_LTE 							{ $$ = template("<="); 			   }
-						 | OP_GT 							{ $$ = template(">"); 			   }
-						 | OP_GTE 							{ $$ = template(">="); 			   }
-						 ;
-
-logicalExpression: expression logical_op expression 		{ $$ = template("%s %s %s",$1,$2,$3); }
- 				  ;
- 	   logical_op : OP_AND 									{ $$ = template("&&"); 			   }
-          		  | OP_OR 									{ $$ = template("||"); 			   }
-          		  ;
-
-parenthExpression: SYM_L_P expression SYM_R_P				{ $$ = template("(%s)",$2);    	   }
-		     	  | expression SYM_L_P expression SYM_R_P	{ $$ = template("%s (%s)",$1,$3);  }
-		     	  ;
-
-castExpression: SYM_L_P compound_type SYM_R_P expression			{ $$ = template("(%s)%s",$2,$4);   }
-
+expression:  POSINT 								{ $$ = template("%s",$1); 		   }
+		   | REAL									{ $$ = template("%s",$1); 		   }					
+		   | STRING 								{ $$ = template("%s",$1); 		   } /*TODO : Change this function*/
+		   | IDENT complexBrackets 					{ $$ = template("%s%s",$1,$2); 	   }
+		   | KW_TRUE 								{ $$ = template("1");	 		   }
+		   | KW_FALSE								{ $$ = template("0"); 			   }
+		   | KW_RESULT								{ $$ = template("result"); 		   }
+		   | functionCall							{ $$ = template("%s",$1); 		   } 
+		   | OP_ADD expression %prec PREFIX			{ $$ = template("+%s",$2); 		   }
+		   | OP_MINUS expression %prec PREFIX		{ $$ = template("-%s",$2); 		   }  
+		   | OP_NOT expression 	   					{ $$ = template("!%s",$2);  	   }
+		   | expression OP_ADD expression 			{ $$ = template("%s + %s",$1,$3);  }
+		   | expression OP_MINUS expression 		{ $$ = template("%s - %s",$1,$3);  }
+		   | expression OP_DIV expression 			{ $$ = template("%s / %s",$1,$3);  }
+		   | expression OP_MUL expression 			{ $$ = template("%s * %s",$1,$3);  }
+		   | expression OP_MOD expression 			{ $$ = template("%s %% %s",$1,$3); }
+		   | expression OP_EQ   expression 			{ $$ = template("%s == %s",$1,$3); }
+		   | expression OP_INEQ expression 			{ $$ = template("%s != %s",$1,$3); }
+		   | expression OP_LT   expression 			{ $$ = template("%s < %s",$1,$3);  }
+		   | expression OP_LTE  expression 			{ $$ = template("%s <= %s",$1,$3); }
+		   | expression OP_GT   expression 			{ $$ = template("%s > %s",$1,$3);  }
+		   | expression OP_GTE  expression 			{ $$ = template("%s >= %s",$1,$3); }
+		   | expression OP_AND  expression 			{ $$ = template("%s && %s",$1,$3); }
+		   | expression OP_OR   expression 			{ $$ = template("%s || %s",$1,$3); }
+		   | SYM_L_P expression SYM_R_P				{ $$ = template("(%s)",$2);    	   }
+		   | expression SYM_L_P expression SYM_R_P	{ $$ = template("%s (%s)",$1,$3);  }
+		   | SYM_L_P compound_type SYM_R_P expression %prec CAST	{ $$ = template("(%s)%s",$2,$4);   }
+		   ;
 %%

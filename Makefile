@@ -70,3 +70,4 @@ clean:
 	$(RM) ./bin/fl_compiler
 	$(RM) ./test/demoSamples/*.c
 	$(RM) ./test/samples/*.c
+	$(RM) runMe
