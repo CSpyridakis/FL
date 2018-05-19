@@ -12,7 +12,7 @@
 char* strdup(const char*);
 
 #define BUFSIZE 1024
-inline char* readString() {
+extern inline char* readString() {
 	char buffer[BUFSIZE];
 	buffer[0]='\0';
 	fgets(buffer, BUFSIZE, stdin);
@@ -24,7 +24,7 @@ inline char* readString() {
 }
 #undef BUFSIZE
 
-inline int readInteger() { return atoi(readString()); }
-inline double readReal() { return atof(readString()); }
+extern inline int readInteger() { return atoi(readString()); }
+extern inline double readReal() { return atof(readString()); }
 
 #endif 

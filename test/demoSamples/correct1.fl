@@ -36,7 +36,7 @@ end;
 
 function factor(n:integer) : integer;
 var
-	fac, i: integer;
+	i: integer;
 	arrayFac :array [1000] of integer;
 	numOfFactors,factorsSum: integer;
 begin
@@ -72,8 +72,7 @@ begin
 end;
 
 begin
-	begin_main:
-		goto factor_label;
+	goto factor_label;
 
 	writeString("Never Print This");
 

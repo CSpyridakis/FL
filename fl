@@ -59,14 +59,14 @@ fi
 #Trans-compile and Compile 
 if [ "$2" = "-r" ] ; then
 	transCompileFile $1 ; echo ; echo
-	gcc "${cFile}" -o run ;
+	gcc -Wall -std=c11 "${cFile}" -o runMe ;
 	exit 0
 fi
 
 #Trans-compile Compile and run
 if [ "$2" = "-R" ] ; then
 	transCompileFile $1 ; echo ; echo
-	gcc "${cFile}" -o runMe ; echo
+	gcc -Wall -std=c11 "${cFile}" -o runMe ; echo
 	./runMe
 	exit 0
 fi
