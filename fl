@@ -6,7 +6,6 @@ transCompileFile()
 	inputFile=$1
 	postf=.fl
 	flFile="${inputFile}"
-	fileName= "${inputFile%$postf}"
 	cFile="${inputFile%$postf}.c"
 	./bin/fl_compiler < "${flFile}" > "${cFile}"
 }
@@ -53,7 +52,7 @@ fi
 #Trans-compile all sample files
 if [ "$1" = "-a" ] ; then
 	good
-	bad
+	#bad
 	exit 0
 fi
 

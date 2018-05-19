@@ -249,24 +249,24 @@ fun_proc_comm: variableAssignment
 
 		functionCall : IDENT '(' arglistCall ')' 						{ 
 																	replaceQInSTR($3);
-																	if (strcmp($1, "readString")==0){
-																		$$ = template("gets()");
-																	}else if (strcmp($1, "readInteger")==0){
-																		//$$ = template("(int)atoi((char*)gets())");
-																		$$ = template("scanf(\"%%d\",&tmp)");
-																	}else if (strcmp($1, "readReal")==0){
-																		$$ = template("atof(gets())");
-																	}else if (strcmp($1, "writeString")==0){
-																		$$ = template("puts(%s)",$3);
-																	}else if (strcmp($1, "writeInteger")==0){
-																		$$ = template("printf(\"%%d\",%s)",$3);
-																	}else if (strcmp($1, "writeReal")==0){
-																		$$ = template("printf(\"%%f\",%s)",$3);
-																	}else{
-																		$$ = template("%s(%s)",$1,$3);  
-																	}
+																	// if (strcmp($1, "readString")==0){
+																	// 	$$ = template("gets()");
+																	// }else if (strcmp($1, "readInteger")==0){
+																	// 	//$$ = template("(int)atoi((char*)gets())");
+																	// 	$$ = template("scanf(\"%%d\",&tmp)");
+																	// }else if (strcmp($1, "readReal")==0){
+																	// 	$$ = template("atof(gets())");
+																	// }else if (strcmp($1, "writeString")==0){
+																	// 	$$ = template("puts(%s)",$3);
+																	// }else if (strcmp($1, "writeInteger")==0){
+																	// 	$$ = template("printf(\"%%d\",%s)",$3);
+																	// }else if (strcmp($1, "writeReal")==0){
+																	// 	$$ = template("printf(\"%%f\",%s)",$3);
+																	// }else{
+																	// 	$$ = template("%s(%s)",$1,$3);  
+																	// }
 																	
-																	//$$ = template("%s(%s)",$1,$3);  
+																	$$ = template("%s(%s)",$1,$3);  
 
 																}
 			 		;
