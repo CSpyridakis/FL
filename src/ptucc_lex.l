@@ -87,11 +87,11 @@ false 	 { if(DEBUG){fprintf(destPrint,  "token KEYWORD_FALSE: %s\n", 			yytext);
 {STRING} { if(DEBUG){fprintf(destPrint,  "token STRING: %s\n",   				yytext);} yylval.crepr = strdup(yytext); return STRING; }
 
 	/* 7. Operators */
-"+" 	 { if(DEBUG){fprintf(destPrint,  "token OP_ADD: %s\n",   				yytext);} 		  return '+';       }
-"-"		 { if(DEBUG){fprintf(destPrint,  "token OP_SUB: %s\n",    				yytext);} 		  return '-';       }
-"*"		 { if(DEBUG){fprintf(destPrint,  "token OP_MUL: %s\n",    				yytext);} 		  return '*';       }
-"/"|div	 { if(DEBUG){fprintf(destPrint,  "token OP_DIV: %s\n",    				yytext);} 	   	  return '/';       }
-mod	     { if(DEBUG){fprintf(destPrint,  "token OP_MOD: %s\n",    				yytext);} 	   	  return '%';       }
+"+" 	 { if(DEBUG){fprintf(destPrint,  "token OP_ADD: %s\n",   				yytext);} 		  return OP_ADD;    }
+"-"		 { if(DEBUG){fprintf(destPrint,  "token OP_SUB: %s\n",    				yytext);} 		  return OP_MINUS;  }
+"*"		 { if(DEBUG){fprintf(destPrint,  "token OP_MUL: %s\n",    				yytext);} 		  return OP_MUL;    }
+"/"|div	 { if(DEBUG){fprintf(destPrint,  "token OP_DIV: %s\n",    				yytext);} 	   	  return OP_DIV;    }
+mod	     { if(DEBUG){fprintf(destPrint,  "token OP_MOD: %s\n",    				yytext);} 	   	  return OP_MOD;    }
 "="		 { if(DEBUG){fprintf(destPrint,  "token OP_EQ: %s\n",     				yytext);}      	  return OP_EQ;     }
 "<>"	 { if(DEBUG){fprintf(destPrint,  "token OP_INEQ: %s\n",   				yytext);}	  	  return OP_INEQ;   } 
 "<"		 { if(DEBUG){fprintf(destPrint,  "token OP_LT: %s\n",     				yytext);}      	  return OP_LT;     }
@@ -105,14 +105,14 @@ not|"!"	 { if(DEBUG){fprintf(destPrint,  "token OP_NOT: %s\n",    				yytext);} 
 
 
 	/* 8. Delimiters */
-";"		{ if(DEBUG){fprintf(destPrint,  "token DELIM_SEMICOLON: %s\n", 			yytext);} 			return ';';		}
-"("		{ if(DEBUG){fprintf(destPrint,  "token DELIM_L_PARENTH: %s\n",			yytext);} 			return '(';		}
-")"		{ if(DEBUG){fprintf(destPrint,  "token DELIM_R_PARENTH: %s\n", 			yytext);} 			return ')';		}
-","		{ if(DEBUG){fprintf(destPrint,  "token DELIM_COMMA: %s\n", 	 			yytext);}     		return ',';		}
-"["		{ if(DEBUG){fprintf(destPrint,  "token DELIM_L_BRACKET: %s\n", 			yytext);} 			return '[';		}
-"]"		{ if(DEBUG){fprintf(destPrint,  "token DELIM_R_BRACKET: %s\n", 			yytext);} 			return ']';		}
-":"		{ if(DEBUG){fprintf(destPrint,  "token DELIM_COLON: %s\n", 	 			yytext);} 	    	return ':';		}
-"."		{ if(DEBUG){fprintf(destPrint,  "token DELIM_FULLSTOP: %s\n",  			yytext);}       	return '.';		}
+";"		{ if(DEBUG){fprintf(destPrint,  "token DELIM_SEMICOLON: %s\n", 			yytext);} 		  return SYM_SEMI;	}
+"("		{ if(DEBUG){fprintf(destPrint,  "token DELIM_L_PARENTH: %s\n",			yytext);} 		  return SYM_L_P;	}
+")"		{ if(DEBUG){fprintf(destPrint,  "token DELIM_R_PARENTH: %s\n", 			yytext);} 		  return SYM_R_P;	}
+","		{ if(DEBUG){fprintf(destPrint,  "token DELIM_COMMA: %s\n", 	 			yytext);}     	  return SYM_COMMA;	}
+"["		{ if(DEBUG){fprintf(destPrint,  "token DELIM_L_BRACKET: %s\n", 			yytext);} 		  return SYM_L_B;	}
+"]"		{ if(DEBUG){fprintf(destPrint,  "token DELIM_R_BRACKET: %s\n", 			yytext);} 		  return SYM_R_B;	}
+":"		{ if(DEBUG){fprintf(destPrint,  "token DELIM_COLON: %s\n", 	 			yytext);} 	      return SYM_COL;	}
+"."		{ if(DEBUG){fprintf(destPrint,  "token DELIM_FULLSTOP: %s\n",  			yytext);}         return SYM_DOT;	}
 
 	/* 9. Whitespace */
 [ \r\t]					/* skip whitespace */
