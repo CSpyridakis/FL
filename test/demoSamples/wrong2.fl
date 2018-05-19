@@ -1,0 +1,63 @@
+prtogram correct2; (* Not 'program' *)
+
+var h: char;;;;;;;;;;;;;;;;;;;;;;;;. (* garbage *)
+	ello: array[5] of char;
+	this: array of boolean;
+	world: array[1][2]34][567] of real; (* missed bracket*)
+
+var is: integer;
+	so: real;
+	great: array of integer (* missed semicolon *)
+
+type tell = array of char;
+	 me = array for tell ;        (* 'for' instead of 'of'*)
+	 _is = array[23] of me;
+type
+	 it = function(I, see, trees, _of, green: array of _is): tell;
+	 _not = array of it;
+
+function sing(_do, __not: tell; them, _or: me; blabla: array of _is): ; (* no return type *)
+	var 
+		i: integer;
+		tired: int(e)ger;					(* Ooops *)
+		soreness_of_throat: integer;
+begin
+	tired := 0;
+	while tired < 5 do begin begin          (* OOops*)
+		writeString('\n');
+		writeString('Lalala i feel so good');
+		writeString('I am in such a splendid mood');
+		for i:=1 to 10 doit begin 									(* doit??*)
+			writeString('I never fall, I never sway');
+			writeString('Nor am I bored this time of May');
+			if i div 3 = 3 and 1=1 and !(156=9*0*(5+2)*6/7) then
+				tired:=tired + 2
+		end;
+		if tired = 1 and soreness_of_throat < 4 then 
+			writeString('Now only do i know')
+		else if soreness_of_throat = 2 then
+			writeString('That like the winter snow must go')
+		else if soreness_of_throat = 2 then
+			writeString('I must, must, must, must leap')
+		else 
+			writeString('Myself to bed, and go to sleep');
+
+		soreness_of_throat := soreness_of_throat + 1
+	end;
+
+	tired := 1 + 2 + 3 + 1234;
+	result := tired + 91*89- soreness_of_throat div 3  4 and blabla or ((int)_do + (int)__not + blabla); (* forgot operand *)
+	return
+end;
+
+a_song: array of char;                                      (* forgot var *)
+
+begin
+	goto here;
+	there:
+	a_song := sing(1, 2, 3, 4, 5);
+	goto the_end;
+	here::													(* extra ':' *)
+	goto there;
+	the_end:
+end.

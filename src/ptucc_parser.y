@@ -343,6 +343,6 @@ parenthExpression: SYM_L_P expression SYM_R_P				{ $$ = template("(%s)",$2);    
 		     	  | expression SYM_L_P expression SYM_R_P	{ $$ = template("%s (%s)",$1,$3);  }
 		     	  ;
 
-castExpression: SYM_L_P dtype SYM_R_P expression			{ $$ = template("(%s)%s",$2,$4);   }
+castExpression: SYM_L_P compound_type SYM_R_P expression			{ $$ = template("(%s)%s",$2,$4);   }
 
 %%
