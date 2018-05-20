@@ -80,6 +80,20 @@ begin
 	writeString('\n')
 end;
 
+procedure do_one_complex_expression();
+var
+	f1,f2,f3,realN: integer;
+begin
+	f1:=0.420E+2;
+	f2:=42000.0e-3;
+	f3:=4.2e1;
+
+	realN := (real)((f1-3.14)*(2.0+f2)+(f3+2.0));
+	writeString("Complex expression result: "); 
+	writeReal(realN);
+	writeString('\n')
+end;
+
 begin
 	goto factor_label;
 
@@ -87,6 +101,8 @@ begin
 
 	factor_label:
 		run("\nFactors:", factor, menu());
-
-	writeString("Exit")
+	
+	do_one_complex_expression();
+	
+	writeString("Exit\n")
 end.

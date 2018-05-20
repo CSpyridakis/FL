@@ -68,8 +68,7 @@ extern int line_num;
 
 
 	/*------------------------------*/
-%left SYM_L_B SYM_R_B 
-%left SYM_L_P SYM_R_P   
+%left SYM_L_B SYM_L_P  
 %left OP_NOT
 %left PREFIX
 %left CAST
@@ -78,6 +77,7 @@ extern int line_num;
 %left OP_EQ OP_INEQ OP_LT OP_GT OP_LTE OP_GTE 
 %left OP_AND 
 %left OP_OR
+%left SYM_R_B SYM_R_P   
 %nonassoc KW_THEN
 %nonassoc KW_ELSE
 %%
@@ -230,7 +230,7 @@ fun_proc_comm: variableAssignment
 									| complexBracketsL							{ $$ = template("%s", $1); }
 									; 
 
-					complexBracketsL:  SYM_L_B expression SYM_R_B							{ $$ = template("[%s]", $2); }
+					complexBracketsL: SYM_L_B expression SYM_R_B							{ $$ = template("[%s]", $2); }
 									| complexBracketsL SYM_L_B expression SYM_R_B			{ $$ = template("%s[%s]",$1,$3);  }
 									; 
 
@@ -287,7 +287,6 @@ expression:  POSINT 								{ $$ = template("%s",$1); 		   }
 		   | expression OP_AND  expression 			{ $$ = template("%s && %s",$1,$3); }
 		   | expression OP_OR   expression 			{ $$ = template("%s || %s",$1,$3); }
 		   | SYM_L_P expression SYM_R_P				{ $$ = template("(%s)",$2);    	   }
-		   | expression SYM_L_P expression SYM_R_P	{ $$ = template("%s (%s)",$1,$3);  }
 		   | SYM_L_P compound_type SYM_R_P expression %prec CAST	{ $$ = template("(%s)%s",$2,$4);   }
 		   ;
 %%
