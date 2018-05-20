@@ -52,7 +52,7 @@ fi
 #Trans-compile all sample files
 if [ "$1" = "-a" ] ; then
 	good
-	#bad
+	echo ; bad
 	exit 0
 fi
 

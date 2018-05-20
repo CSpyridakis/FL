@@ -68,8 +68,8 @@ extern int line_num;
 
 
 	/*------------------------------*/
-%left SYM_R_B SYM_L_B
-%left SYM_R_P SYM_L_P  
+%left SYM_L_B SYM_R_B 
+%left SYM_L_P SYM_R_P   
 %left OP_NOT
 %left PREFIX
 %left CAST
@@ -198,12 +198,12 @@ basicDeclaration: KW_TYPE typelist 	SYM_SEMI														   { $$ = template("%s
 								    	   ;
 
 
-statements: %empty				       	{ $$ = ";"; 								}
-		  | commands		   			{ $$ = template("%s\n", $1); 			}
+statements: %empty				       											{ $$ = ""; 								}
+		  | commands		   													{ $$ = template("%s\n", $1); 			}
 		  ;		
 
 commands : basicCommand															{ $$ = template("%s\n", $1); 	  }
-		 | commands SYM_SEMI basicCommand 											{ $$ = template("%s\n%s",$1,$3);  }
+		 | commands SYM_SEMI basicCommand 										{ $$ = template("%s\n%s",$1,$3);  }
 		 ;
 
 basicCommand : fun_proc_comm													{ $$ = template("%s",$1); 			}
@@ -217,17 +217,17 @@ fun_proc_comm: variableAssignment
 			 | KW_FOR variableAssignment KW_TO expression KW_DO special_body 	{ $$ = template("for(%s %s < %s; %s++)%s",$2,idenName($2),$4,idenName($2),$6);	}/*For loop ++*/
 			 | KW_FOR variableAssignment KW_DOWNTO expression KW_DO special_body{ $$ = template("for(%s %s > %s; %s--)%s",$2,idenName($2),$4,idenName($2),$6); }/*For loop --*/
 			 | KW_WHILE expression KW_DO special_body							{ $$ = template("while(%s)%s",$2,$4); 		 								}/*While loop*/
-			 | KW_REPEAT repeat_special_body KW_UNTIL expression  				    	{ $$ = template("do%swhile( !(%s) );",$2,$4); 								}/*Repeat*/
-			 | IDENT SYM_COL statements												{ $$ = template("%s:\n%s",$1,$3);											}/*Label with statements*/
+			 | KW_REPEAT repeat_special_body KW_UNTIL expression  				{ $$ = template("do%swhile( !(%s) );",$2,$4); 								}/*Repeat*/
+			 | IDENT SYM_COL statements											{ $$ = template("%s:\n%s",$1,$3);											}/*Label with statements*/
 			 | KW_GOTO IDENT													{ $$ = template("goto %s;",$2);												}/*Goto statement*/
 			 | functionCall														{ $$ = template("%s;",$1); 	}		
 			 ; 
 
-		 variableAssignment: IDENT complexBrackets OP_ASSIGN expression					{ $$ = template("%s%s = %s;",$1,$2,$4);				}
+		 variableAssignment: IDENT complexBrackets OP_ASSIGN expression			{ $$ = template("%s%s = %s;",$1,$2,$4);				}
 				           ;
 
-					complexBrackets : %empty  										{ $$ = ""; }
-									| complexBracketsL								{ $$ = template("%s", $1); }
+					complexBrackets : %empty  									{ $$ = ""; }
+									| complexBracketsL							{ $$ = template("%s", $1); }
 									; 
 
 					complexBracketsL:  SYM_L_B expression SYM_R_B							{ $$ = template("[%s]", $2); }
@@ -235,7 +235,7 @@ fun_proc_comm: variableAssignment
 									; 
 
 
-		functionCall : IDENT SYM_L_P arglistCall SYM_R_P 	{ replaceQInSTR($3); $$ = template("%s(%s)",$1,$3); }
+		functionCall : IDENT SYM_L_P arglistCall SYM_R_P 						{ replaceQInSTR($3); $$ = template("%s(%s)",$1,$3); }
 			 		;
 
 					arglistCall: %empty 	{ $$ = ""; }
