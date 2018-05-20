@@ -61,14 +61,15 @@ extern int line_num;
 %type <crepr> typelist varlist params compound_type funcStatements procStatements idents paramsList dtype bracket_list brackets fun_proc_comm FunProcStatementsL
 
 	/* Commands */
-%type <crepr> special_body commands basicCommand variableAssignment ifStatement special_body_list arglist complexBracketsL repeat_special_body repeat_special_body_list
+%type <crepr> special_body commands basicCommand variableAssignment special_body_list arglist complexBracketsL repeat_special_body repeat_special_body_list
           
 	/* Expressions */
 %type <crepr> expression complexBrackets functionCall arglistCall           
 
 
 	/*------------------------------*/
-%left SYM_L_P SYM_R_P SYM_L_B SYM_R_B
+%left SYM_R_B SYM_L_B
+%left SYM_R_P SYM_L_P  
 %left OP_NOT
 %left PREFIX
 %left CAST
@@ -211,7 +212,8 @@ basicCommand : fun_proc_comm													{ $$ = template("%s",$1); 			}
 
 fun_proc_comm: variableAssignment
 			 | KW_RESULT OP_ASSIGN expression 									{ $$ = template("result = %s;",$3);    										}/*Result assignment*/
-			 | ifStatement 														{ $$ = template("%s", $1); 			}
+			 | KW_IF expression KW_THEN special_body							{ $$ = template("if(%s)%s",$2,$4); 					}
+			 | KW_IF expression KW_THEN special_body KW_ELSE special_body 		{ $$ = template("if(%s)%s\nelse{\n%s\n}",$2,$4,$6); }
 			 | KW_FOR variableAssignment KW_TO expression KW_DO special_body 	{ $$ = template("for(%s %s < %s; %s++)%s",$2,idenName($2),$4,idenName($2),$6);	}/*For loop ++*/
 			 | KW_FOR variableAssignment KW_DOWNTO expression KW_DO special_body{ $$ = template("for(%s %s > %s; %s--)%s",$2,idenName($2),$4,idenName($2),$6); }/*For loop --*/
 			 | KW_WHILE expression KW_DO special_body							{ $$ = template("while(%s)%s",$2,$4); 		 								}/*While loop*/
@@ -232,33 +234,8 @@ fun_proc_comm: variableAssignment
 									| complexBracketsL SYM_L_B expression SYM_R_B			{ $$ = template("%s[%s]",$1,$3);  }
 									; 
 
-		 ifStatement : KW_IF expression KW_THEN special_body							{ $$ = template("if(%s)%s",$2,$4); 					}
-			 		 | KW_IF expression KW_THEN special_body KW_ELSE special_body 		{ $$ = template("if(%s)%s\nelse{\n%s\n}",$2,$4,$6); }
-				     ; 
 
-
-		functionCall : IDENT SYM_L_P arglistCall SYM_R_P 						{ 
-																	replaceQInSTR($3);
-																	// if (strcmp($1, "readString")==0){
-																	// 	$$ = template("gets()");
-																	// }else if (strcmp($1, "readInteger")==0){
-																	// 	//$$ = template("(int)atoi((char*)gets())");
-																	// 	$$ = template("scanf(\"%%d\",&tmp)");
-																	// }else if (strcmp($1, "readReal")==0){
-																	// 	$$ = template("atof(gets())");
-																	// }else if (strcmp($1, "writeString")==0){
-																	// 	$$ = template("puts(%s)",$3);
-																	// }else if (strcmp($1, "writeInteger")==0){
-																	// 	$$ = template("printf(\"%%d\",%s)",$3);
-																	// }else if (strcmp($1, "writeReal")==0){
-																	// 	$$ = template("printf(\"%%f\",%s)",$3);
-																	// }else{
-																	// 	$$ = template("%s(%s)",$1,$3);  
-																	// }
-																	
-																	$$ = template("%s(%s)",$1,$3);  
-
-																}
+		functionCall : IDENT SYM_L_P arglistCall SYM_R_P 	{ replaceQInSTR($3); $$ = template("%s(%s)",$1,$3); }
 			 		;
 
 					arglistCall: %empty 	{ $$ = ""; }

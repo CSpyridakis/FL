@@ -13,6 +13,15 @@ var
 	i: integer;
 	sumFactBasic: integer;
 
+function lessThan(variable,value:integer): boolean;
+begin
+	if variable < value then
+		result:=true
+	else
+		result:=false;
+	return
+end;
+
 function menu(): integer;
 	var 
 		tmp: integer;
@@ -23,7 +32,7 @@ begin
 			writeString('Give a number(1-1000): ');
 			tmp := readInteger();
 
-			if tmp < 1 then 
+			if lessThan(tmp,1)=true then 
 				writeString('\nNumber too small!')
 			else if (tmp > 1000) then
 				writeString('\nNumber too big!')
