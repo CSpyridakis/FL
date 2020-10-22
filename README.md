@@ -1,18 +1,32 @@
 # Fictional Language to C Trans-compiler 
- ( Trans-compiler using flex & bison based on "Theory of Computation" course project)
+Simple Trans-compiler implemented for a Theory of Computation course at the Technical University of Crete.
+This application trans-compiles code from a fictional language - specifications are available [here](./doc/Project.pdf) - to C programs.
 
-## Build Trans-Compiler:
+## Dependencies
+  1. Flex
+  2. Bison
 
-  * make
 
-## Clean:
+## Usage
+<hr>
 
-  * make clean
+### 1. To Build in a LINUX-based system, run the command below:
+```
+$ make
+```
+### 2. How to Use Trans-compiler:
+```
+$ ./fl path_to_file.fl
+```
+<hr>
 
-## Use Trans-compiler:
+### Or view Trans-compiler Help Menu for more information:
+```
+$ ./fl -h
+```
 
-  * ./fl path_to_file.fl
+### Clean generated files:
+```
+$ make clean
+```
 
-## Trans-compiler Help Menu:
-
-  * ./fl -h

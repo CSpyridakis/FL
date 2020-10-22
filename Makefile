@@ -8,7 +8,7 @@ CC = gcc
 
 BASICFLAGS= -std=c11
 
-DEBUGFLAGS=  -g 
+DEBUGFLAGS= -g 
 OPTFLAGS= -g -finline -march=native -O3 -DNDEBUG
 
 ifeq ($(PROFILE),1)
@@ -40,6 +40,7 @@ BISON=bison
 
 PATH_TO_SRC= ./src/
 PATH_TO_BIN= ./bin/
+PATH_TO_BUILD= ./build/
 C_PROG= ptucc ptucc_scan sample001
 C_SOURCES= $(PATH_TO_SRC)ptucc.c $(PATH_TO_SRC)ptucc_scan.c $(PATH_TO_SRC)cgen.c
 C_GEN=ptucc_lex.c ptucc_parser.tab.h ptucc_parser.tab.c sample001.c
@@ -57,17 +58,17 @@ bison_compile:
 	$(BISON) -d -v -r all $(PATH_TO_SRC)ptucc_parser.y
 
 src_compile:
-	mkdir -p bin
-	mv ptucc_lex.c ./bin/
-	mv ptucc_parser.tab.c ./bin/
-	mv ptucc_parser.tab.h ./bin/
-	mv ptucc_parser.output ./bin/
-	$(CC) $(CFLAGS) -o fl_compiler $(PATH_TO_BIN)ptucc_lex.c $(PATH_TO_BIN)ptucc_parser.tab.c $(PATH_TO_SRC)cgen.c $(PATH_TO_SRC)ptucc.c $(LIBS)
-	mv fl_compiler ./bin/
+	mkdir -p ${PATH_TO_BUILD}
+	mkdir -p ${PATH_TO_BIN}
+	mv ptucc_lex.c ${PATH_TO_BUILD}
+	mv ptucc_parser.tab.c ${PATH_TO_BUILD}
+	mv ptucc_parser.tab.h ${PATH_TO_BUILD}
+	mv ptucc_parser.output ${PATH_TO_BUILD}
+	$(CC) $(CFLAGS) -o fl_compiler ${PATH_TO_BUILD}ptucc_lex.c ${PATH_TO_BUILD}ptucc_parser.tab.c ${PATH_TO_SRC}cgen.c ${PATH_TO_SRC}ptucc.c $(LIBS)
+	mv fl_compiler ${PATH_TO_BIN}
 
 clean:
-	$(RM) ./bin/*.*
-	$(RM) ./bin/fl_compiler
+	$(RM) -r ${PATH_TO_BIN} ${PATH_TO_BUILD}
 	$(RM) ./test/demoSamples/*.c
 	$(RM) ./test/samples/*.c
 	$(RM) runMe

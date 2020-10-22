@@ -381,6 +381,7 @@ char* get_typedef(char* name)
 /*
 ---------------------------------------------------------------------------------------------
 */
+// OUR CODE!
 char * subStringFromSeparator(char * string){
 	// ":" separator to ascii 
 	int separatorAsciiValue=32;

@@ -1,5 +1,5 @@
 #include <stdio.h>
-#include "../bin/ptucc_parser.tab.h"
+#include "../build/ptucc_parser.tab.h"
 
 int main()
 {
