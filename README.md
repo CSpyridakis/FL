@@ -37,5 +37,4 @@ $ make clean
 *(make project and see build/ptucc_parser.output for more) 
 
 ## IMPORTANT: 
-The owner of the initial software is the Technical University of Crete. Its code was given to us during a 'Theory of Computation' course as is, without any warranty. It may or may not had bugs, useless parts of code, or other problems to simulate a real-life scenario. Therefore it had an educational purpose and only. During the course, our job was to understand given sources, identify its components, and implement needed requirements based on that.
-
+The ptuclib.h file that exists [here](test/samples/ptuclib.h) & [here](test/demoSamples/ptuclib.h) and a part of code in [cgen.c](src/cgen.c) & [cgen.h](include/cgen.h) owned by the Technical University of Crete. These files were given to us throughout the course as is, without any warranty. They may or may not had bugs, useless parts of code, or other problems to simulate a real-life scenario. Therefore, these had an educational purpose and only. During the course's project, our job was to understand given sources, identify their components, remove/rewrite/add content from/to them, and finally write our code to implement needed requirements.
